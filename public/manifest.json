@@ -1,0 +1,15 @@
+{
+  "short_name": "Livery",
+  "name": "Livery.one — Liver Weight Prediction",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#01afab",
+  "background_color": "#0a1628"
+}

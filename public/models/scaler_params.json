@@ -1,0 +1,23 @@
+{
+  "input_mean": [
+    890.6078431372549,
+    0.5392156862745098,
+    4.386666639178407
+  ],
+  "input_std": [
+    165.1321014184624,
+    0.4984597576033788,
+    1.1628593401959957
+  ],
+  "output_mean": 743.8823529411765,
+  "output_std": 120.14593202725993,
+  "feature_names": [
+    "Preoperation Volume (CC)",
+    "Gender",
+    "VCI Area Suprarenal (cm\u00b2)"
+  ],
+  "metrics": {
+    "r2": 0.7374,
+    "mae_grams": 33.31
+  }
+}
