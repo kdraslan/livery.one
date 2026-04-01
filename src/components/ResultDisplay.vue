@@ -3,7 +3,7 @@ import { computed } from 'vue';
 
 interface PredictionResult {
   weight: number;
-  model: 'linear' | 'mlp';
+  model: 'linear' | 'mlp' | 'ridge';
   modelLabel: string;
   r2?: number;
   mae?: number;
@@ -89,6 +89,10 @@ const r2Percent = computed(() => {
   background: linear-gradient(90deg, var(--color-primary), var(--color-primary-light));
 }
 
+.result-card.ridge::before {
+  background: linear-gradient(90deg, #34c759, #6ee7a0);
+}
+
 .result-header {
   display: flex;
   align-items: center;
@@ -121,6 +125,11 @@ const r2Percent = computed(() => {
 .model-tag.mlp {
   background: rgba(1, 175, 171, 0.15);
   color: var(--color-primary-light);
+}
+
+.model-tag.ridge {
+  background: rgba(52, 199, 89, 0.15);
+  color: #6ee7a0;
 }
 
 .result-value {

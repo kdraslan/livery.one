@@ -7,8 +7,10 @@ import { ref } from 'vue';
 
 interface PredictionResult {
   weight: number;
-  model: 'linear' | 'mlp';
+  model: 'linear' | 'mlp' | 'ridge';
   modelLabel: string;
+  r2?: number;
+  mae?: number;
 }
 
 const result = ref<PredictionResult | null>(null);

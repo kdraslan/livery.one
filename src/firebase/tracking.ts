@@ -1,7 +1,7 @@
 import { logEvent } from 'firebase/analytics';
 import { getFirebaseAnalytics } from './config';
 
-export function trackPrediction(model: 'linear' | 'mlp'): void {
+export function trackPrediction(model: 'linear' | 'mlp' | 'ridge'): void {
   const analytics = getFirebaseAnalytics();
   if (!analytics) return;
 

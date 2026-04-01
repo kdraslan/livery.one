@@ -2,24 +2,37 @@
 import { ref, computed, onMounted } from 'vue';
 import { useLinearModel } from '@/composables/useLinearModel';
 import { useMLPModel } from '@/composables/useMLPModel';
+import { useRidgeModel } from '@/composables/useRidgeModel';
 import { trackPrediction } from '@/firebase/tracking';
 
 const emit = defineEmits<{
-  predict: [result: { weight: number; model: 'linear' | 'mlp'; modelLabel: string }];
+  predict: [
+    result: { weight: number; model: 'linear' | 'mlp' | 'ridge'; modelLabel: string },
+  ];
   loading: [isLoading: boolean];
   reset: [];
 }>();
 
 const volume = ref<string>('');
 const gender = ref<string>('');
-const vciArea = ref<string>('');
+const age = ref<string>('');
+const vciAreaSuprarenal = ref<string>('');
+const vciAreaVenoatrial = ref<string>('');
+const enhancedModel = ref<'mlp' | 'ridge'>('ridge');
 
 const linearModel = useLinearModel();
 const mlpModel = useMLPModel();
+const ridgeModel = useRidgeModel();
 
 const isEnhancedMode = computed(() => {
-  const val = parseFloat(vciArea.value);
+  const val = parseFloat(vciAreaSuprarenal.value);
   return !isNaN(val) && val > 0;
+});
+
+const isFullRidgeMode = computed(() => {
+  const ageVal = parseFloat(age.value);
+  const vciVenoVal = parseFloat(vciAreaVenoatrial.value);
+  return isEnhancedMode.value && !isNaN(ageVal) && ageVal > 0 && !isNaN(vciVenoVal) && vciVenoVal > 0;
 });
 
 const canSubmit = computed(() => {
@@ -29,7 +42,7 @@ const canSubmit = computed(() => {
 
 onMounted(async () => {
   emit('loading', true);
-  await mlpModel.load();
+  await Promise.all([mlpModel.load(), ridgeModel.load()]);
   emit('loading', false);
 });
 
@@ -39,16 +52,39 @@ function handleSubmit() {
   const vol = parseFloat(volume.value);
   const gen = parseInt(gender.value);
 
-  if (isEnhancedMode.value && mlpModel.isReady.value) {
-    const result = mlpModel.predict({
-      volume: vol,
-      gender: gen,
-      vciArea: parseFloat(vciArea.value),
-    });
-    if (result) {
-      trackPrediction('mlp');
-      emit('predict', result);
-      return;
+  if (isEnhancedMode.value) {
+    const vciSupra = parseFloat(vciAreaSuprarenal.value);
+    const ageVal = parseFloat(age.value);
+    const vciVeno = parseFloat(vciAreaVenoatrial.value);
+    const useFullRidge =
+      !isNaN(ageVal) && ageVal >= 0 && !isNaN(vciVeno) && vciVeno > 0;
+
+    if (enhancedModel.value === 'mlp' && mlpModel.isReady.value) {
+      const result = mlpModel.predict({
+        volume: vol,
+        gender: gen,
+        vciArea: vciSupra,
+      });
+      if (result) {
+        trackPrediction('mlp');
+        emit('predict', result);
+        return;
+      }
+    }
+
+    if (enhancedModel.value === 'ridge' && ridgeModel.isReady.value) {
+      const result = ridgeModel.predict({
+        volume: vol,
+        gender: gen,
+        vciArea: vciSupra,
+        age: useFullRidge ? ageVal : undefined,
+        vciVenoatrial: useFullRidge ? vciVeno : undefined,
+      });
+      if (result) {
+        trackPrediction('ridge');
+        emit('predict', result);
+        return;
+      }
     }
   }
 
@@ -60,8 +96,14 @@ function handleSubmit() {
 function handleReset() {
   volume.value = '';
   gender.value = '';
-  vciArea.value = '';
+  age.value = '';
+  vciAreaSuprarenal.value = '';
+  vciAreaVenoatrial.value = '';
   emit('reset');
+}
+
+function selectModel(model: 'mlp' | 'ridge') {
+  enhancedModel.value = model;
 }
 </script>
 
@@ -69,11 +111,39 @@ function handleReset() {
   <form class="form-card" @submit.prevent="handleSubmit">
     <div class="form-header">
       <h2>Patient Measurements</h2>
-      <div class="mode-badge" :class="{ enhanced: isEnhancedMode }">
+      <div v-if="!isEnhancedMode" class="mode-badge">
         <span class="mode-dot" />
-        {{ isEnhancedMode ? 'Enhanced ML Model' : 'Standard Model' }}
+        Standard Model
       </div>
     </div>
+
+    <Transition name="switch-fade">
+      <div v-if="isEnhancedMode" class="model-switch-row">
+        <span class="switch-label">Model</span>
+        <div class="model-switch">
+          <button
+            type="button"
+            class="switch-option"
+            :class="{ active: enhancedModel === 'ridge' }"
+            @click="selectModel('ridge')"
+          >
+            Ridge
+          </button>
+          <button
+            type="button"
+            class="switch-option"
+            :class="{ active: enhancedModel === 'mlp' }"
+            @click="selectModel('mlp')"
+          >
+            Neural Net
+          </button>
+          <div
+            class="switch-slider"
+            :class="{ right: enhancedModel === 'mlp' }"
+          />
+        </div>
+      </div>
+    </Transition>
 
     <div class="fields">
       <div class="field">
@@ -112,14 +182,33 @@ function handleReset() {
       </div>
 
       <div class="field">
-        <label for="vci">
+        <label for="age">
+          Age
+          <span class="optional">(optional)</span>
+        </label>
+        <div class="input-wrapper">
+          <input
+            id="age"
+            v-model="age"
+            type="number"
+            placeholder="e.g. 49"
+            min="0"
+            step="1"
+          />
+          <span class="unit">years</span>
+        </div>
+        <span class="hint">Patient age in years. Fill with VCI Venoatrial for highest accuracy.</span>
+      </div>
+
+      <div class="field">
+        <label for="vci-supra">
           VCI Area Suprarenal
           <span class="optional">(optional)</span>
         </label>
         <div class="input-wrapper">
           <input
-            id="vci"
-            v-model="vciArea"
+            id="vci-supra"
+            v-model="vciAreaSuprarenal"
             type="number"
             placeholder="e.g. 3.52"
             min="0"
@@ -128,10 +217,35 @@ function handleReset() {
           <span class="unit">cm&sup2;</span>
         </div>
         <span class="hint">
-          Cross-sectional area of the inferior vena cava.
+          Cross-sectional area of the inferior vena cava at suprarenal level.
           <template v-if="!isEnhancedMode">
-            Fill this to activate the enhanced neural network model.
+            Fill this to activate enhanced prediction models.
           </template>
+          <template v-else-if="!isFullRidgeMode">
+            Add Age and VCI Venoatrial for the highest-accuracy model (R² 79%).
+          </template>
+        </span>
+      </div>
+
+      <div class="field">
+        <label for="vci-veno">
+          VCI Area Venoatrial
+          <span class="optional">(optional)</span>
+        </label>
+        <div class="input-wrapper">
+          <input
+            id="vci-veno"
+            v-model="vciAreaVenoatrial"
+            type="number"
+            placeholder="e.g. 4.09"
+            min="0"
+            step="any"
+          />
+          <span class="unit">cm&sup2;</span>
+        </div>
+        <span class="hint">
+          Cross-sectional area of the inferior vena cava at venoatrial level.
+          Add with Age for the highest-accuracy model.
         </span>
       </div>
     </div>
@@ -187,13 +301,6 @@ function handleReset() {
   background: rgba(255, 255, 255, 0.06);
   color: var(--color-text-secondary);
   border: 1px solid var(--color-border);
-  transition: all 0.4s var(--ease);
-}
-
-.mode-badge.enhanced {
-  background: rgba(1, 175, 171, 0.12);
-  color: var(--color-primary-light);
-  border-color: rgba(1, 175, 171, 0.3);
 }
 
 .mode-dot {
@@ -201,12 +308,98 @@ function handleReset() {
   height: 6px;
   border-radius: 50%;
   background: var(--color-text-muted);
-  transition: background 0.4s var(--ease);
 }
 
-.mode-badge.enhanced .mode-dot {
-  background: var(--color-primary);
-  box-shadow: 0 0 8px rgba(1, 175, 171, 0.5);
+/* Model toggle switch */
+.model-switch-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding: 12px 16px;
+  background: rgba(1, 175, 171, 0.06);
+  border: 1px solid rgba(1, 175, 171, 0.15);
+  border-radius: var(--radius-md);
+}
+
+.switch-label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-primary-light);
+  white-space: nowrap;
+}
+
+.model-switch {
+  position: relative;
+  display: flex;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  padding: 3px;
+  flex: 1;
+  max-width: 280px;
+}
+
+.switch-option {
+  flex: 1;
+  position: relative;
+  z-index: 1;
+  padding: 7px 16px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.3s var(--ease);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.switch-option.active {
+  color: #fff;
+}
+
+.switch-slider {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: calc(50% - 3px);
+  height: calc(100% - 6px);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  border-radius: 6px;
+  transition: transform 0.3s var(--ease);
+  box-shadow: 0 2px 8px rgba(1, 175, 171, 0.3);
+}
+
+.switch-slider.right {
+  transform: translateX(100%);
+}
+
+/* Transition for switch row appearing */
+.switch-fade-enter-active {
+  transition: all 0.4s var(--ease);
+}
+
+.switch-fade-leave-active {
+  transition: all 0.25s var(--ease);
+}
+
+.switch-fade-enter-from {
+  opacity: 0;
+  max-height: 0;
+  margin-bottom: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  overflow: hidden;
+}
+
+.switch-fade-leave-to {
+  opacity: 0;
+  max-height: 0;
+  margin-bottom: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  overflow: hidden;
 }
 
 .fields {

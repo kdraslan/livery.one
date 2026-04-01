@@ -12,8 +12,8 @@
         />
       </svg>
       <span>
-        For research and educational purposes only. Not intended for clinical decision-making
-        without professional medical oversight.
+        This tool is still under active development. Predictions should be used in conjunction
+        with professional medical judgment and clinical expertise.
       </span>
     </div>
     <div class="credits">
