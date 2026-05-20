@@ -20,17 +20,18 @@
       <span>&copy; {{ new Date().getFullYear() }} Livery.one</span>
       <span class="separator">&middot;</span>
       <span>Built by Kadir Aslan</span>
+      <span class="separator">&middot;</span>
+      <span>Supervised by Prof. Dr. R. Sarper Ökten</span>
     </div>
   </footer>
 </template>
 
 <style scoped>
 .footer {
-  padding: 24px 0 32px;
-  margin-top: auto;
+  padding: 0 0 20px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
 .disclaimer {
@@ -55,6 +56,7 @@
 .credits {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   font-size: 0.8rem;
   color: var(--color-text-muted);

@@ -2,15 +2,15 @@
  * Linear regression model for liver weight prediction.
  * Uses only Preoperation Volume and Gender.
  *
- * Formula derived from the notebook baseline:
- * Weight = 163.014 + 0.6578 * Volume - 4.584 * Gender
+ * Formula re-derived from updated dataset (102 patients, complete data):
+ * Weight = 169.817 + 0.6444 * Volume - 0.6907 * Gender
  *
- * Performance: R² = 0.75, MAE = 32.15g
+ * Performance: R² = 0.77, MAE = 32.24g
  */
 
-const INTERCEPT = 163.0137;
-const COEF_VOLUME = 0.6578;
-const COEF_GENDER = -4.5842;
+const INTERCEPT = 169.8165;
+const COEF_VOLUME = 0.644422;
+const COEF_GENDER = -0.690664;
 
 export interface LinearPredictionInput {
   volume: number;
@@ -33,8 +33,8 @@ export function useLinearModel() {
       weight: Math.round(weight * 100) / 100,
       model: 'linear',
       modelLabel: 'Linear Regression',
-      r2: 0.75,
-      mae: 32.15,
+      r2: 0.77,
+      mae: 32.24,
     };
   }
 

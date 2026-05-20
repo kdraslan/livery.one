@@ -40,14 +40,18 @@
 
 <style scoped>
 .header {
-  padding: 40px 0 8px;
+  padding: 24px 0 0;
 }
 
 .logo {
   display: flex;
   align-items: center;
   gap: 14px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
+}
+
+.logo-icon {
+  display: flex;
 }
 
 .logo-icon svg {
@@ -79,6 +83,5 @@
   font-size: 0.95rem;
   color: var(--color-text-secondary);
   line-height: 1.6;
-  max-width: 560px;
 }
 </style>

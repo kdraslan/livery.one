@@ -34,6 +34,7 @@ function handleReset() {
     <div class="app-bg" />
     <div class="app-content">
       <AppHeader />
+      <hr class="divider" />
       <main class="main">
         <PredictionForm
           @predict="handlePrediction"
@@ -42,6 +43,7 @@ function handleReset() {
         />
         <ResultDisplay :result="result" :is-loading="isLoading" />
       </main>
+      <hr class="divider" />
       <AppFooter />
     </div>
   </div>
@@ -69,6 +71,7 @@ function handleReset() {
   flex: 1;
   display: flex;
   flex-direction: column;
+  gap: 16px;
   max-width: 720px;
   width: 100%;
   margin: 0 auto;
@@ -79,7 +82,16 @@ function handleReset() {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  padding: 24px 0;
+  gap: 16px;
+}
+
+.divider {
+  position: relative;
+  left: 50%;
+  width: 100vw;
+  transform: translateX(-50%);
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  margin: 8px 0;
 }
 </style>

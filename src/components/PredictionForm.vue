@@ -16,6 +16,8 @@ const emit = defineEmits<{
 const volume = ref<string>('');
 const gender = ref<string>('');
 const age = ref<string>('');
+const height = ref<string>('');
+const weight = ref<string>('');
 const vciAreaSuprarenal = ref<string>('');
 const vciAreaVenoatrial = ref<string>('');
 const enhancedModel = ref<'mlp' | 'ridge'>('ridge');
@@ -24,15 +26,36 @@ const linearModel = useLinearModel();
 const mlpModel = useMLPModel();
 const ridgeModel = useRidgeModel();
 
-const isEnhancedMode = computed(() => {
+// Body mode: height + weight provided (best non-VCI upgrade: R² 0.86)
+const isBodyMode = computed(() => {
+  const h = parseFloat(height.value);
+  const w = parseFloat(weight.value);
+  return !isNaN(h) && h > 0 && !isNaN(w) && w > 0;
+});
+
+// VCI mode: VCI suprarenal provided
+const isVciMode = computed(() => {
   const val = parseFloat(vciAreaSuprarenal.value);
   return !isNaN(val) && val > 0;
 });
 
-const isFullRidgeMode = computed(() => {
+// Enhanced mode: either body or VCI fields provided
+const isEnhancedMode = computed(() => isBodyMode.value || isVciMode.value);
+
+// Full VCI mode: age + both VCI fields provided
+const isFullVciMode = computed(() => {
   const ageVal = parseFloat(age.value);
   const vciVenoVal = parseFloat(vciAreaVenoatrial.value);
-  return isEnhancedMode.value && !isNaN(ageVal) && ageVal > 0 && !isNaN(vciVenoVal) && vciVenoVal > 0;
+  return isVciMode.value && !isNaN(ageVal) && ageVal > 0 && !isNaN(vciVenoVal) && vciVenoVal > 0;
+});
+
+// Best R² label to show in hints
+const bestActiveR2 = computed(() => {
+  if (isBodyMode.value && isVciMode.value) return '85%';
+  if (isBodyMode.value) return '86%';
+  if (isFullVciMode.value) return '80%';
+  if (isVciMode.value) return '74%';
+  return null;
 });
 
 const canSubmit = computed(() => {
@@ -51,15 +74,15 @@ function handleSubmit() {
 
   const vol = parseFloat(volume.value);
   const gen = parseInt(gender.value);
+  const ageVal = parseFloat(age.value);
+  const h = parseFloat(height.value);
+  const w = parseFloat(weight.value);
+  const vciSupra = parseFloat(vciAreaSuprarenal.value);
+  const vciVeno = parseFloat(vciAreaVenoatrial.value);
 
   if (isEnhancedMode.value) {
-    const vciSupra = parseFloat(vciAreaSuprarenal.value);
-    const ageVal = parseFloat(age.value);
-    const vciVeno = parseFloat(vciAreaVenoatrial.value);
-    const useFullRidge =
-      !isNaN(ageVal) && ageVal >= 0 && !isNaN(vciVeno) && vciVeno > 0;
-
-    if (enhancedModel.value === 'mlp' && mlpModel.isReady.value) {
+    // MLP is only available in VCI mode (needs VCI Suprarenal)
+    if (enhancedModel.value === 'mlp' && isVciMode.value && mlpModel.isReady.value) {
       const result = mlpModel.predict({
         volume: vol,
         gender: gen,
@@ -72,13 +95,15 @@ function handleSubmit() {
       }
     }
 
-    if (enhancedModel.value === 'ridge' && ridgeModel.isReady.value) {
+    if (ridgeModel.isReady.value) {
       const result = ridgeModel.predict({
         volume: vol,
         gender: gen,
-        vciArea: vciSupra,
-        age: useFullRidge ? ageVal : undefined,
-        vciVenoatrial: useFullRidge ? vciVeno : undefined,
+        height: isNaN(h) ? undefined : h,
+        weight: isNaN(w) ? undefined : w,
+        vciArea: isNaN(vciSupra) ? undefined : vciSupra,
+        age: isNaN(ageVal) ? undefined : ageVal,
+        vciVenoatrial: isNaN(vciVeno) ? undefined : vciVeno,
       });
       if (result) {
         trackPrediction('ridge');
@@ -97,6 +122,8 @@ function handleReset() {
   volume.value = '';
   gender.value = '';
   age.value = '';
+  height.value = '';
+  weight.value = '';
   vciAreaSuprarenal.value = '';
   vciAreaVenoatrial.value = '';
   emit('reset');
@@ -118,7 +145,7 @@ function selectModel(model: 'mlp' | 'ridge') {
     </div>
 
     <Transition name="switch-fade">
-      <div v-if="isEnhancedMode" class="model-switch-row">
+      <div v-if="isVciMode" class="model-switch-row">
         <span class="switch-label">Model</span>
         <div class="model-switch">
           <button
@@ -146,6 +173,7 @@ function selectModel(model: 'mlp' | 'ridge') {
     </Transition>
 
     <div class="fields">
+      <!-- Required fields -->
       <div class="field">
         <label for="volume">
           Preoperation Volume
@@ -181,6 +209,59 @@ function selectModel(model: 'mlp' | 'ridge') {
         <span class="hint">Biological sex of the patient</span>
       </div>
 
+      <!-- Body measurements section -->
+      <div class="section-divider">
+        <span>Body Measurements</span>
+        <span v-if="isBodyMode" class="section-badge body">R² {{ bestActiveR2 }}</span>
+        <span v-else class="section-hint">Fill both for a major accuracy boost</span>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="height">
+            Height
+            <span class="optional">(optional)</span>
+          </label>
+          <div class="input-wrapper">
+            <input
+              id="height"
+              v-model="height"
+              type="number"
+              placeholder="e.g. 172"
+              min="0"
+              step="any"
+            />
+            <span class="unit">cm</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="weight">
+            Weight
+            <span class="optional">(optional)</span>
+          </label>
+          <div class="input-wrapper">
+            <input
+              id="weight"
+              v-model="weight"
+              type="number"
+              placeholder="e.g. 75"
+              min="0"
+              step="any"
+            />
+            <span class="unit">kg</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- VCI / advanced section -->
+      <div class="section-divider">
+        <span>Advanced (VCI)</span>
+        <span v-if="isFullVciMode" class="section-badge vci">R² 80%</span>
+        <span v-else-if="isVciMode" class="section-badge vci">R² 74%</span>
+        <span v-else class="section-hint">Optional — add for VCI-based models</span>
+      </div>
+
       <div class="field">
         <label for="age">
           Age
@@ -197,7 +278,7 @@ function selectModel(model: 'mlp' | 'ridge') {
           />
           <span class="unit">years</span>
         </div>
-        <span class="hint">Patient age in years. Fill with VCI Venoatrial for highest accuracy.</span>
+        <span class="hint">Fill with VCI Venoatrial for highest VCI model accuracy.</span>
       </div>
 
       <div class="field">
@@ -218,12 +299,7 @@ function selectModel(model: 'mlp' | 'ridge') {
         </div>
         <span class="hint">
           Cross-sectional area of the inferior vena cava at suprarenal level.
-          <template v-if="!isEnhancedMode">
-            Fill this to activate enhanced prediction models.
-          </template>
-          <template v-else-if="!isFullRidgeMode">
-            Add Age and VCI Venoatrial for the highest-accuracy model (R² 79%).
-          </template>
+          <template v-if="!isVciMode">Activates Neural Net and VCI-based Ridge models.</template>
         </span>
       </div>
 
@@ -245,7 +321,7 @@ function selectModel(model: 'mlp' | 'ridge') {
         </div>
         <span class="hint">
           Cross-sectional area of the inferior vena cava at venoatrial level.
-          Add with Age for the highest-accuracy model.
+          Add with Age for the full VCI model (R² 80%).
         </span>
       </div>
     </div>
@@ -308,6 +384,61 @@ function selectModel(model: 'mlp' | 'ridge') {
   height: 6px;
   border-radius: 50%;
   background: var(--color-text-muted);
+}
+
+/* Section dividers */
+.section-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 4px;
+}
+
+.section-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+
+.section-badge {
+  padding: 2px 8px;
+  border-radius: 100px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.section-badge.body {
+  background: rgba(52, 199, 89, 0.15);
+  color: #6ee7a0;
+  border: 1px solid rgba(52, 199, 89, 0.25);
+}
+
+.section-badge.vci {
+  background: rgba(1, 175, 171, 0.15);
+  color: var(--color-primary-light);
+  border: 1px solid rgba(1, 175, 171, 0.25);
+}
+
+.section-hint {
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: var(--color-text-muted);
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+/* Two-column row for height/weight */
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
 }
 
 /* Model toggle switch */
@@ -554,5 +685,15 @@ select option {
 .btn-secondary:hover {
   background: var(--color-surface-hover);
   color: var(--color-text);
+}
+
+@media (max-width: 480px) {
+  .field-row {
+    grid-template-columns: 1fr;
+  }
+
+  .section-hint {
+    display: none;
+  }
 }
 </style>
