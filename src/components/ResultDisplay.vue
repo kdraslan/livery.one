@@ -20,10 +20,6 @@ interface ExtendedResult extends PredictionResult {
   enteredFeatures?: string[];
 }
 
-const emit = defineEmits<{
-  close: [];
-}>();
-
 const formattedWeight = computed(() => {
   if (!props.result) return '';
   return props.result.weight.toFixed(1);

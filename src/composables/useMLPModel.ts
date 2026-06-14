@@ -17,14 +17,14 @@ export interface MLPPredictionResult {
 }
 
 interface ScalerParams {
-  inputMean: number[];
-  inputStd: number[];
-  outputMean: number;
-  outputStd: number;
-  featureNames: string[];
+  input_mean: number[];
+  input_std: number[];
+  output_mean: number;
+  output_std: number;
+  feature_names: string[];
   metrics: {
     r2: number;
-    maeGrams: number;
+    mae_grams: number;
   };
 }
 
@@ -70,7 +70,7 @@ export function useMLPModel() {
 
     const rawInput = [input.volume, input.gender, input.vciArea];
     const normalized = rawInput.map(
-      (val, i) => (val - scalerParams!.inputMean[i]) / scalerParams!.inputStd[i],
+      (val, i) => (val - scalerParams!.input_mean[i]) / scalerParams!.input_std[i],
     );
 
     const inputTensor = tf.tensor2d([normalized]);
@@ -80,14 +80,14 @@ export function useMLPModel() {
     inputTensor.dispose();
     outputTensor.dispose();
 
-    const weight = scaledOutput * scalerParams.outputStd + scalerParams.outputMean;
+    const weight = scaledOutput * scalerParams.output_std + scalerParams.output_mean;
 
     return {
       weight: Math.round(weight * 100) / 100,
       model: 'mlp',
       modelLabel: 'Neural Network (MLP)',
       r2: scalerParams.metrics.r2,
-      mae: scalerParams.metrics.maeGrams,
+      mae: scalerParams.metrics.mae_grams,
     };
   }
 

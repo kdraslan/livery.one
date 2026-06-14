@@ -56,7 +56,7 @@ function handleVciModeChange(vci: boolean) {
     </main>
     <AppFooter />
     <Drawer v-model="showResults" fit>
-      <ResultDisplay :result="result" :is-loading="isLoading" @close="showResults = false" />
+      <ResultDisplay :result="result" :is-loading="isLoading" />
     </Drawer>
   </div>
 </template>
@@ -83,6 +83,7 @@ function handleVciModeChange(vci: boolean) {
   flex: 1;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: 8px;
   max-width: 720px;
   width: 100%;

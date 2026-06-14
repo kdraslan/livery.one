@@ -291,29 +291,13 @@ function handleReset() {
         </div>
       </div>
 
-      <div class="field">
-        <label for="age">
-          Age
-          <span class="optional">(optional)</span>
-        </label>
-        <CustomNumberInput
-          id="age"
-          v-model="age"
-          placeholder="e.g. 49"
-          :min="0"
-          :step="1"
-          unit="years"
-        />
-        <span class="hint">Fill with VCI Venoatrial for highest VCI model accuracy.</span>
-      </div>
-
       <!-- VCI / advanced section -->
       <button
         type="button"
         class="section-divider"
         @click="isAdvancedExpanded = !isAdvancedExpanded"
       >
-        <span>Advanced (VCI)</span>
+        <span>Advanced</span>
         <div class="section-controls">
           <span v-if="isFullVciMode" class="section-badge vci">CV R² 69.8%</span>
           <span v-else-if="isVciMode" class="section-badge vci">CV R² 67.0%</span>
@@ -327,43 +311,61 @@ function handleReset() {
       <Transition name="collapse">
         <div v-if="isAdvancedExpanded" class="advanced-fields">
           <div class="field">
-        <label for="vci-supra">
-          VCI Area Suprarenal
-          <span class="optional">(optional)</span>
-        </label>
-        <CustomNumberInput
-          id="vci-supra"
-          v-model="vciAreaSuprarenal"
-          placeholder="e.g. 3.52"
-          :min="0"
-          :step="0.01"
-          unit="cm²"
-          @blur="handleVciBlur"
-        />
-        <span class="hint">
-          Cross-sectional area of the inferior vena cava at suprarenal level.
-          <template v-if="!isVciMode">Activates Neural Net and VCI-based Ridge models.</template>
-        </span>
-      </div>
+            <label for="age">
+              Age
+              <span class="optional">(optional)</span>
+            </label>
+            <CustomNumberInput
+              id="age"
+              v-model="age"
+              placeholder="e.g. 49"
+              :min="0"
+              :step="1"
+              unit="years"
+            />
+            <span class="hint">Fill with VCI Venoatrial for highest VCI model accuracy.</span>
+          </div>
 
-      <div class="field">
-        <label for="vci-veno">
-          VCI Area Venoatrial
-          <span class="optional">(optional)</span>
-        </label>
-        <CustomNumberInput
-          id="vci-veno"
-          v-model="vciAreaVenoatrial"
-          placeholder="e.g. 4.09"
-          :min="0"
-          :step="0.01"
-          unit="cm²"
-        />
-        <span class="hint">
-          Cross-sectional area of the inferior vena cava at venoatrial level.
-          Add with Age for the full VCI model (CV R² 69.8%).
-        </span>
-      </div>
+          <div class="vci-fields">
+            <div class="field">
+              <label for="vci-supra">
+                VCI Area Suprarenal
+                <span class="optional">(optional)</span>
+              </label>
+              <CustomNumberInput
+                id="vci-supra"
+                v-model="vciAreaSuprarenal"
+                placeholder="e.g. 3.52"
+                :min="0"
+                :step="0.01"
+                unit="cm²"
+                @blur="handleVciBlur"
+              />
+              <span class="hint">
+                Cross-sectional area of the inferior vena cava at suprarenal level.
+                <template v-if="!isVciMode">Activates Neural Net and VCI-based Ridge models.</template>
+              </span>
+            </div>
+
+            <div class="field">
+              <label for="vci-veno">
+                VCI Area Venoatrial
+                <span class="optional">(optional)</span>
+              </label>
+              <CustomNumberInput
+                id="vci-veno"
+                v-model="vciAreaVenoatrial"
+                placeholder="e.g. 4.09"
+                :min="0"
+                :step="0.01"
+                unit="cm²"
+              />
+              <span class="hint">
+                Cross-sectional area of the inferior vena cava at venoatrial level.
+                Add with Age for the full VCI model (CV R² 69.8%).
+              </span>
+            </div>
+          </div>
         </div>
       </Transition>
     </div>
@@ -511,7 +513,7 @@ function handleReset() {
 .field-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: 8px;
 }
 
 .fields {
@@ -519,6 +521,25 @@ function handleReset() {
   flex-direction: column;
   gap: 14px;
   margin-bottom: 18px;
+}
+
+.advanced-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.vci-fields {
+  display: flex;
+
+  @media (min-width: 560px) {
+    gap: 8px;
+  }
+
+  @media (max-width: 560px) {
+    flex-direction: column;
+    gap: 14px;
+  }
 }
 
 .field label {
@@ -682,7 +703,7 @@ select option {
   margin-bottom: 0;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 560px) {
   .field-row {
     grid-template-columns: 1fr;
   }
