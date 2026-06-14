@@ -170,10 +170,10 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   height: 70vh;
-  left: 12px;
+  left: 20px;
   overflow: hidden;
   position: fixed;
-  right: 12px;
+  right: 20px;
   z-index: 1001;
   pointer-events: auto;
 }

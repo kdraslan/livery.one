@@ -12,12 +12,15 @@ interface PredictionResult {
   modelLabel: string;
   r2?: number;
   mae?: number;
+  usedFeatures?: string[];
+  enteredFeatures?: string[];
 }
 
 const result = ref<PredictionResult | null>(null);
 const isLoading = ref(false);
 const showResults = ref(false);
 const enhancedModel = ref<'mlp' | 'ridge'>('ridge');
+const isVciMode = ref(false);
 
 function handlePrediction(prediction: PredictionResult) {
   result.value = prediction;
@@ -32,18 +35,23 @@ function handleReset() {
   result.value = null;
   showResults.value = false;
 }
+
+function handleVciModeChange(vci: boolean) {
+  isVciMode.value = vci;
+}
 </script>
 
 <template>
   <div class="app">
     <div class="app-bg" />
-    <AppHeader v-model="enhancedModel" />
+    <AppHeader v-model="enhancedModel" :is-vci-mode="isVciMode" />
     <main class="main">
       <PredictionForm
         v-model="enhancedModel"
         @predict="handlePrediction"
         @loading="handleLoading"
         @reset="handleReset"
+        @vci-mode="handleVciModeChange"
       />
     </main>
     <AppFooter />

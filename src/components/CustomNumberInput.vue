@@ -13,6 +13,7 @@ withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   'update:modelValue': [value: string]
+  blur: []
 }>()
 
 function handleInput(e: Event) {
@@ -31,6 +32,7 @@ function handleInput(e: Event) {
       :step="step"
       class="input"
       @input="handleInput"
+      @blur="emit('blur')"
     />
     <span v-if="unit" class="unit">{{ unit }}</span>
   </div>

@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
+import Tooltip from '@/components/Tooltip.vue'
 
 defineProps<{
   modelValue?: 'mlp' | 'ridge'
+  isVciMode?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -10,8 +12,14 @@ const emit = defineEmits<{
 }>()
 
 const isCompact = ref(false)
+const isScrollable = ref(false)
+
+function checkScrollable() {
+  isScrollable.value = document.documentElement.scrollHeight > window.innerHeight
+}
 
 function handleScroll() {
+  if (!isScrollable.value) return
   isCompact.value = window.scrollY > 0
 }
 
@@ -20,12 +28,15 @@ function handleFormInteraction() {
 }
 
 onMounted(() => {
+  checkScrollable()
   window.addEventListener('scroll', handleScroll, { passive: true })
+  window.addEventListener('resize', checkScrollable, { passive: true })
   document.addEventListener('focusin', handleFormInteraction, { passive: true })
 })
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
+  window.removeEventListener('resize', checkScrollable)
   document.removeEventListener('focusin', handleFormInteraction)
 })
 </script>
@@ -62,25 +73,29 @@ onUnmounted(() => {
             <p class="tagline">Liver Weight Prediction</p>
           </div>
         </div>
-        <div v-if="modelValue" class="model-section">
+        <div v-if="modelValue && isVciMode" class="model-section">
           <span class="model-label">Model:</span>
           <div class="model-switch">
-            <button
-              type="button"
-              class="switch-option"
-              :class="{ active: modelValue === 'ridge' }"
-              @click="emit('update:modelValue', 'ridge')"
-            >
-              Ridge
-            </button>
-            <button
-              type="button"
-              class="switch-option"
-              :class="{ active: modelValue === 'mlp' }"
-              @click="emit('update:modelValue', 'mlp')"
-            >
-              Neural Net
-            </button>
+            <Tooltip text="Ridge: Regularized linear model with VCI and body measurement support">
+              <button
+                type="button"
+                class="switch-option"
+                :class="{ active: modelValue === 'ridge' }"
+                @click="emit('update:modelValue', 'ridge')"
+              >
+                Ridge
+              </button>
+            </Tooltip>
+            <Tooltip text="Neural Net: Deep learning model optimized for VCI-based predictions">
+              <button
+                type="button"
+                class="switch-option"
+                :class="{ active: modelValue === 'mlp' }"
+                @click="emit('update:modelValue', 'mlp')"
+              >
+                Neural Net
+              </button>
+            </Tooltip>
             <div
               class="switch-slider"
               :class="{ right: modelValue === 'mlp' }"
@@ -134,7 +149,7 @@ onUnmounted(() => {
   }
 
   .root.compact .header-content {
-    padding: 8px 20px;
+    padding: 12px 20px;
   }
 
   .logo {
@@ -170,7 +185,7 @@ onUnmounted(() => {
   .logo-text {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 5px;
   }
 
   .dot {
@@ -182,6 +197,7 @@ onUnmounted(() => {
     color: var(--color-text-secondary);
     font-weight: 400;
     letter-spacing: 0.04em;
+    line-height: 1;
     text-transform: uppercase;
   }
 
@@ -206,6 +222,7 @@ onUnmounted(() => {
   .model-section {
     display: flex;
     align-items: center;
+    gap: 8px;
 
     @media (max-width: $mobileBreakpoint) {
       margin: auto;

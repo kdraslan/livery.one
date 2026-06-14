@@ -115,7 +115,7 @@ function buildFeatures(p: RidgeModelParams, input: RidgePredictionInput): number
   };
 
   // Return features in the order specified by the model variant
-  return p.inputFeatures.map((name) => featureMap[name] ?? 0);
+  return p.input_features.map((name: string) => featureMap[name] ?? 0);
 }
 
 export function useRidgeModel() {
@@ -152,9 +152,9 @@ export function useRidgeModel() {
     const hasFullVci = hasVci && input.age != null && input.age >= 0 && input.vciVenoatrial != null && input.vciVenoatrial > 0;
 
     // Select best variant based on available inputs.
-    // body_full (R²=0.833) is intentionally skipped — body_simple (R²=0.859) outperforms it.
-    // The final else branch (no VCI, no body) should not be reached in normal use because
-    // the form only calls predict() when at least one of these is filled.
+    // body_full (R²=0.833, MAE=32.48g) is intentionally skipped — body_simple (R²=0.859, MAE=30.30g)
+    // outperforms it. Adding age to body measurements actually reduces accuracy, so we use body_simple.
+    // Similarly, full (R²=0.796) is used for VCI+Age since body+VCI+Age goes to 'all' variant.
     let variant: keyof RidgeParamsFile;
     let label: string;
 

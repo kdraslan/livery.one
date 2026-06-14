@@ -15,6 +15,11 @@ const props = defineProps<{
   isLoading: boolean;
 }>();
 
+interface ExtendedResult extends PredictionResult {
+  usedFeatures?: string[];
+  enteredFeatures?: string[];
+}
+
 const emit = defineEmits<{
   close: [];
 }>();
@@ -28,6 +33,33 @@ const r2Percent = computed(() => {
   if (!props.result?.r2) return '';
   return (props.result.r2 * 100).toFixed(1);
 });
+
+const explanationTooltip = computed(() => {
+  if (!props.result) return '';
+
+  const model = props.result.model;
+
+  if (model === 'linear') {
+    return 'Linear Regression only uses Volume and Gender. Add Height, Weight, or VCI measurements for improved accuracy (up to 85.9% for body measurements alone, or 79.6% for VCI).';
+  }
+  if (model === 'mlp') {
+    return 'Neural Network uses Volume, Gender, and VCI Suprarenal. Add VCI Venoatrial and Age for higher accuracy (79.6% with Full VCI).';
+  }
+  if (model === 'ridge') {
+    return 'Ridge uses a subset of available features based on your inputs. Add more measurements for potentially better accuracy.';
+  }
+
+  return '';
+});
+
+const unusedFeatures = computed(() => {
+  const result = props.result as ExtendedResult;
+  if (!result?.usedFeatures || !result?.enteredFeatures) return [];
+
+  return result.enteredFeatures.filter(feature => !result.usedFeatures?.includes(feature));
+});
+
+const hasUnusedFeatures = computed(() => unusedFeatures.value.length > 0);
 </script>
 
 <template>
@@ -40,41 +72,72 @@ const r2Percent = computed(() => {
             {{ result.modelLabel }}
           </div>
         </div>
-        <button class="btn-close" aria-label="Close" @click="emit('close')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
-        </button>
       </div>
 
       <div class="result-value">
         <span class="weight">{{ formattedWeight }}</span>
-        <span class="unit">grams</span>
+        <span class="unit">
+          grams
+
+          <Tooltip :text="explanationTooltip">
+            <svg class="info-icon" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+            </svg>
+          </Tooltip>
+        </span>
       </div>
 
       <div class="metrics">
-        <div class="metric" v-if="result.r2">
-          <Tooltip text="Cross-validation accuracy: how well the model generalizes to new data">
+        <Tooltip position="top" text="Cross-validation accuracy: how well the model generalizes to new data">
+          <div class="metric" v-if="result.r2">
             <span class="metric-label">Model Accuracy (R²)</span>
-          </Tooltip>
-          <span class="metric-value">{{ r2Percent }}%</span>
-        </div>
-        <div class="metric" v-if="result.mae">
-          <Tooltip text="Mean Absolute Error: typical prediction deviation in grams">
+            <span class="metric-value">{{ r2Percent }}%</span>
+          </div>
+        </Tooltip>
+        <Tooltip position="top" text="Mean Absolute Error: typical prediction deviation in grams">
+          <div class="metric" v-if="result.mae">
             <span class="metric-label">Avg. Error (MAE)</span>
-          </Tooltip>
-          <span class="metric-value">&plusmn;{{ result.mae.toFixed(1) }}g</span>
-        </div>
-        <div class="metric">
-          <Tooltip text="95% confidence interval: 67% of predictions fall within this range">
+            <span class="metric-value">&plusmn;{{ result.mae.toFixed(1) }}g</span>
+          </div>
+        </Tooltip>
+        <Tooltip position="top" text="95% confidence interval: 67% of predictions fall within this range">
+          <div class="metric">
             <span class="metric-label">Confidence Range</span>
+            <span class="metric-value" v-if="result.mae">
+              {{ (result.weight - result.mae * 2).toFixed(0) }}&ndash;{{
+                (result.weight + result.mae * 2).toFixed(0)
+              }}g
+            </span>
+          </div>
+        </Tooltip>
+      </div>
+
+      <div v-if="(result as ExtendedResult)?.enteredFeatures?.length" class="features-section">
+        <div class="features-header">
+          <span class="features-label">Features inputted:</span>
+          <Tooltip text="These are all the measurements you provided. Features highlighted in yellow are not used by this model, but providing them could improve accuracy with other models.">
+            
+            <svg v-if="hasUnusedFeatures" class="warning-icon" viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+              <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" />
+            </svg>
+            
+            <svg v-else class="help-icon" viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+            </svg>
           </Tooltip>
-          <span class="metric-value" v-if="result.mae">
-            {{ (result.weight - result.mae * 2).toFixed(0) }}&ndash;{{
-              (result.weight + result.mae * 2).toFixed(0)
-            }}g
-          </span>
+        </div>
+        <div class="features-list">
+          <template v-for="feature in (result as ExtendedResult).enteredFeatures" :key="feature">
+            <template v-if="unusedFeatures.includes(feature)">
+              <Tooltip :text="`${feature} is not used by this model. Consider switching models or adding more measurements to use this data.`">
+                <span class="feature-tag unused">{{ feature }}</span>
+              </Tooltip>
+            </template>
+
+            <template v-else>
+              <span class="feature-tag">{{ feature }}</span>
+            </template>
+          </template>
         </div>
       </div>
     </div>
@@ -135,29 +198,6 @@ const r2Percent = computed(() => {
   white-space: nowrap;
 }
 
-.btn-close {
-  background: transparent;
-  border: none;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  padding: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 6px;
-  transition: all 0.2s;
-}
-
-.btn-close:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--color-text);
-}
-
-.btn-close svg {
-  width: 20px;
-  height: 20px;
-}
-
 .model-tag {
   padding: 3px 10px;
   border-radius: 100px;
@@ -185,8 +225,21 @@ const r2Percent = computed(() => {
 .result-value {
   display: flex;
   align-items: baseline;
-  gap: 10px;
+  gap: 12px;
   margin-bottom: 24px;
+}
+
+.info-icon {
+  color: var(--color-primary-light);
+  flex-shrink: 0;
+  cursor: help;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+  margin-top: 8px;
+}
+
+.info-icon:hover {
+  opacity: 1;
 }
 
 .weight {
@@ -201,9 +254,10 @@ const r2Percent = computed(() => {
 }
 
 .result-value .unit {
-  font-size: 1.1rem;
+  display: flex;
   color: var(--color-text-muted);
-  font-weight: 400;
+  align-items: center;
+  gap: 4px;
 }
 
 .metrics {
@@ -219,6 +273,7 @@ const r2Percent = computed(() => {
   padding: 12px;
   background: rgba(255, 255, 255, 0.03);
   border-radius: var(--radius-sm);
+  cursor: help;
 }
 
 .metric-label {
@@ -250,6 +305,80 @@ const r2Percent = computed(() => {
 .result-leave-to {
   opacity: 0;
   transform: translateY(-10px) scale(0.97);
+}
+
+.features-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.features-header {
+  display: flex;
+  align-items: center;
+  line-height: 0;
+  gap: 4px;
+}
+
+.warning-icon-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.warning-icon {
+  color: #ffc107;
+  flex-shrink: 0;
+  cursor: help;
+  opacity: 0.8;
+}
+
+.warning-icon:hover {
+  opacity: 1;
+}
+
+.help-icon {
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+  cursor: help;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.help-icon:hover {
+  opacity: 1;
+}
+
+.features-label {
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
+
+.features-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.feature-tag {
+  display: inline-block;
+  padding: 4px 10px;
+  background: rgba(1, 175, 171, 0.1);
+  color: var(--color-primary-light);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.feature-tag.unused {
+  background: rgba(255, 193, 7, 0.15);
+  color: #ffc107;
+  cursor: help;
 }
 
 @media (max-width: 480px) {
