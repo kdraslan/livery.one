@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import Tooltip from '@/components/Tooltip.vue';
 
 interface PredictionResult {
   weight: number;
@@ -12,6 +13,10 @@ interface PredictionResult {
 const props = defineProps<{
   result: PredictionResult | null;
   isLoading: boolean;
+}>();
+
+const emit = defineEmits<{
+  close: [];
 }>();
 
 const formattedWeight = computed(() => {
@@ -29,10 +34,18 @@ const r2Percent = computed(() => {
   <Transition name="result">
     <div v-if="result" class="result-card" :class="result.model">
       <div class="result-header">
-        <h3>Estimated Liver Weight</h3>
-        <div class="model-tag" :class="result.model">
-          {{ result.modelLabel }}
+        <div class="header-content">
+          <h3>Estimated Liver Weight</h3>
+          <div class="model-tag" :class="result.model">
+            {{ result.modelLabel }}
+          </div>
         </div>
+        <button class="btn-close" aria-label="Close" @click="emit('close')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
       </div>
 
       <div class="result-value">
@@ -42,15 +55,21 @@ const r2Percent = computed(() => {
 
       <div class="metrics">
         <div class="metric" v-if="result.r2">
-          <span class="metric-label">Model Accuracy (R&sup2;)</span>
+          <Tooltip text="Cross-validation accuracy: how well the model generalizes to new data">
+            <span class="metric-label">Model Accuracy (R²)</span>
+          </Tooltip>
           <span class="metric-value">{{ r2Percent }}%</span>
         </div>
         <div class="metric" v-if="result.mae">
-          <span class="metric-label">Avg. Error (MAE)</span>
+          <Tooltip text="Mean Absolute Error: typical prediction deviation in grams">
+            <span class="metric-label">Avg. Error (MAE)</span>
+          </Tooltip>
           <span class="metric-value">&plusmn;{{ result.mae.toFixed(1) }}g</span>
         </div>
         <div class="metric">
-          <span class="metric-label">Confidence Range</span>
+          <Tooltip text="95% confidence interval: 67% of predictions fall within this range">
+            <span class="metric-label">Confidence Range</span>
+          </Tooltip>
           <span class="metric-value" v-if="result.mae">
             {{ (result.weight - result.mae * 2).toFixed(0) }}&ndash;{{
               (result.weight + result.mae * 2).toFixed(0)
@@ -64,13 +83,13 @@ const r2Percent = computed(() => {
 
 <style scoped>
 .result-card {
-  background: var(--color-surface);
-  backdrop-filter: blur(var(--blur));
-  -webkit-backdrop-filter: blur(var(--blur));
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-xl);
-  padding: 28px;
-  box-shadow: var(--shadow-card);
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: none;
+  border-radius: 0;
+  padding: 24px 20px;
+  box-shadow: none;
   position: relative;
   overflow: hidden;
 }
@@ -81,7 +100,7 @@ const r2Percent = computed(() => {
   top: 0;
   left: 0;
   right: 0;
-  height: 3px;
+  height: 0;
   background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
 }
 
@@ -95,17 +114,48 @@ const r2Percent = computed(() => {
 
 .result-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   margin-bottom: 20px;
+  gap: 12px;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   flex-wrap: wrap;
-  gap: 8px;
+  flex: 1;
 }
 
 .result-header h3 {
   font-size: 1rem;
   font-weight: 500;
   color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.btn-close {
+  background: transparent;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.btn-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--color-text);
+}
+
+.btn-close svg {
+  width: 20px;
+  height: 20px;
 }
 
 .model-tag {
@@ -169,7 +219,6 @@ const r2Percent = computed(() => {
   padding: 12px;
   background: rgba(255, 255, 255, 0.03);
   border-radius: var(--radius-sm);
-  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .metric-label {

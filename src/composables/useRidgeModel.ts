@@ -21,13 +21,13 @@ export interface RidgePredictionResult {
 }
 
 interface RidgeModelParams {
-  inputFeatures: string[];
-  featureNames: string[];
-  scalerMean: number[];
-  scalerScale: number[];
-  ridgeIntercept: number;
-  ridgeCoefs: number[];
-  metrics: { r2: number; maeGrams: number; rmseGrams?: number; r2CvMean?: number };
+  input_features: string[];
+  feature_names: string[];
+  scaler_mean: number[];
+  scaler_scale: number[];
+  ridge_intercept: number;
+  ridge_coefs: number[];
+  metrics: { r2: number; mae_grams: number; rmse_grams?: number; r2_cv_mean?: number };
 }
 
 interface RidgeParamsFile {
@@ -179,11 +179,11 @@ export function useRidgeModel() {
     const rawFeatures = buildFeatures(p, input);
     const features = poly2Features(rawFeatures);
 
-    const scaled = features.map((val, i) => (val - p.scalerMean[i]) / p.scalerScale[i]);
+    const scaled = features.map((val, i) => (val - p.scaler_mean[i]) / p.scaler_scale[i]);
 
-    let weight = p.ridgeIntercept;
+    let weight = p.ridge_intercept;
     for (let i = 0; i < scaled.length; i++) {
-      weight += p.ridgeCoefs[i] * scaled[i];
+      weight += p.ridge_coefs[i] * scaled[i];
     }
 
     return {
@@ -191,7 +191,7 @@ export function useRidgeModel() {
       model: 'ridge',
       modelLabel: label,
       r2: p.metrics.r2,
-      mae: p.metrics.maeGrams,
+      mae: p.metrics.mae_grams,
     };
   }
 

@@ -1,9 +1,10 @@
 <script setup lang="ts">
+import { ref } from 'vue';
 import AppHeader from '@/components/AppHeader.vue';
 import PredictionForm from '@/components/PredictionForm.vue';
 import ResultDisplay from '@/components/ResultDisplay.vue';
 import AppFooter from '@/components/AppFooter.vue';
-import { ref } from 'vue';
+import Drawer from '@/components/Drawer.vue';
 
 interface PredictionResult {
   weight: number;
@@ -15,9 +16,11 @@ interface PredictionResult {
 
 const result = ref<PredictionResult | null>(null);
 const isLoading = ref(false);
+const showResults = ref(false);
 
 function handlePrediction(prediction: PredictionResult) {
   result.value = prediction;
+  showResults.value = true;
 }
 
 function handleLoading(loading: boolean) {
@@ -26,26 +29,25 @@ function handleLoading(loading: boolean) {
 
 function handleReset() {
   result.value = null;
+  showResults.value = false;
 }
 </script>
 
 <template>
   <div class="app">
     <div class="app-bg" />
-    <div class="app-content">
-      <AppHeader />
-      <hr class="divider" />
-      <main class="main">
-        <PredictionForm
-          @predict="handlePrediction"
-          @loading="handleLoading"
-          @reset="handleReset"
-        />
-        <ResultDisplay :result="result" :is-loading="isLoading" />
-      </main>
-      <hr class="divider" />
-      <AppFooter />
-    </div>
+    <AppHeader />
+    <main class="main">
+      <PredictionForm
+        @predict="handlePrediction"
+        @loading="handleLoading"
+        @reset="handleReset"
+      />
+    </main>
+    <AppFooter />
+    <Drawer v-model="showResults" fit>
+      <ResultDisplay :result="result" :is-loading="isLoading" @close="showResults = false" />
+    </Drawer>
   </div>
 </template>
 
@@ -67,31 +69,16 @@ function handleReset() {
     linear-gradient(160deg, #0a1628 0%, #0f2035 50%, #0a1628 100%);
 }
 
-.app-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  max-width: 720px;
-  width: 100%;
-  margin: 0 auto;
-  padding: 0 20px;
-}
-
 .main {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-}
-
-.divider {
+  gap: 8px;
+  max-width: 720px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px;
   position: relative;
-  left: 50%;
-  width: 100vw;
-  transform: translateX(-50%);
-  border: none;
-  border-top: 1px solid rgba(255, 255, 255, 0.07);
-  margin: 8px 0;
+  z-index: 1;
 }
 </style>

@@ -4,6 +4,8 @@ import { useLinearModel } from '@/composables/useLinearModel';
 import { useMLPModel } from '@/composables/useMLPModel';
 import { useRidgeModel } from '@/composables/useRidgeModel';
 import { trackPrediction } from '@/firebase/tracking';
+import CustomNumberInput from '@/components/CustomNumberInput.vue';
+import CustomGenderSelect from '@/components/CustomGenderSelect.vue';
 
 const emit = defineEmits<{
   predict: [
@@ -26,7 +28,7 @@ const linearModel = useLinearModel();
 const mlpModel = useMLPModel();
 const ridgeModel = useRidgeModel();
 
-// Body mode: height + weight provided (best non-VCI upgrade: R² 0.86)
+// Body mode: height + weight provided (best non-VCI upgrade: CV R² 0.753)
 const isBodyMode = computed(() => {
   const h = parseFloat(height.value);
   const w = parseFloat(weight.value);
@@ -49,12 +51,12 @@ const isFullVciMode = computed(() => {
   return isVciMode.value && !isNaN(ageVal) && ageVal > 0 && !isNaN(vciVenoVal) && vciVenoVal > 0;
 });
 
-// Best R² label to show in hints
+// Best CV R² label to show in hints
 const bestActiveR2 = computed(() => {
-  if (isBodyMode.value && isVciMode.value) return '85%';
-  if (isBodyMode.value) return '86%';
-  if (isFullVciMode.value) return '80%';
-  if (isVciMode.value) return '74%';
+  if (isBodyMode.value && !isVciMode.value) return '75.3%'; // Body Full
+  if (isBodyMode.value && isVciMode.value) return '71.9%'; // All Features
+  if (isFullVciMode.value) return '69.8%'; // Full VCI
+  if (isVciMode.value) return '67.0%'; // Partial VCI
   return null;
 });
 
@@ -179,33 +181,22 @@ function selectModel(model: 'mlp' | 'ridge') {
           Preoperation Volume
           <span class="required">*</span>
         </label>
-        <div class="input-wrapper">
-          <input
-            id="volume"
-            v-model="volume"
-            type="number"
-            placeholder="e.g. 950"
-            min="0"
-            step="any"
-            required
-          />
-          <span class="unit">CC</span>
-        </div>
+        <CustomNumberInput
+          id="volume"
+          v-model="volume"
+          placeholder="e.g. 950"
+          min="0"
+          unit="CC"
+        />
         <span class="hint">Liver volume estimated from CT scan</span>
       </div>
 
       <div class="field">
-        <label for="gender">
+        <label>
           Gender
           <span class="required">*</span>
         </label>
-        <div class="select-wrapper">
-          <select id="gender" v-model="gender" required>
-            <option value="" disabled>Select gender</option>
-            <option value="0">Female</option>
-            <option value="1">Male</option>
-          </select>
-        </div>
+        <CustomGenderSelect v-model="gender" />
         <span class="hint">Biological sex of the patient</span>
       </div>
 
@@ -222,17 +213,13 @@ function selectModel(model: 'mlp' | 'ridge') {
             Height
             <span class="optional">(optional)</span>
           </label>
-          <div class="input-wrapper">
-            <input
-              id="height"
-              v-model="height"
-              type="number"
-              placeholder="e.g. 172"
-              min="0"
-              step="any"
-            />
-            <span class="unit">cm</span>
-          </div>
+          <CustomNumberInput
+            id="height"
+            v-model="height"
+            placeholder="e.g. 172"
+            min="0"
+            unit="cm"
+          />
         </div>
 
         <div class="field">
@@ -240,25 +227,21 @@ function selectModel(model: 'mlp' | 'ridge') {
             Weight
             <span class="optional">(optional)</span>
           </label>
-          <div class="input-wrapper">
-            <input
-              id="weight"
-              v-model="weight"
-              type="number"
-              placeholder="e.g. 75"
-              min="0"
-              step="any"
-            />
-            <span class="unit">kg</span>
-          </div>
+          <CustomNumberInput
+            id="weight"
+            v-model="weight"
+            placeholder="e.g. 75"
+            min="0"
+            unit="kg"
+          />
         </div>
       </div>
 
       <!-- VCI / advanced section -->
       <div class="section-divider">
         <span>Advanced (VCI)</span>
-        <span v-if="isFullVciMode" class="section-badge vci">R² 80%</span>
-        <span v-else-if="isVciMode" class="section-badge vci">R² 74%</span>
+        <span v-if="isFullVciMode" class="section-badge vci">CV R² 69.8%</span>
+        <span v-else-if="isVciMode" class="section-badge vci">CV R² 67.0%</span>
         <span v-else class="section-hint">Optional — add for VCI-based models</span>
       </div>
 
@@ -267,17 +250,14 @@ function selectModel(model: 'mlp' | 'ridge') {
           Age
           <span class="optional">(optional)</span>
         </label>
-        <div class="input-wrapper">
-          <input
-            id="age"
-            v-model="age"
-            type="number"
-            placeholder="e.g. 49"
-            min="0"
-            step="1"
-          />
-          <span class="unit">years</span>
-        </div>
+        <CustomNumberInput
+          id="age"
+          v-model="age"
+          placeholder="e.g. 49"
+          min="0"
+          :step="1"
+          unit="years"
+        />
         <span class="hint">Fill with VCI Venoatrial for highest VCI model accuracy.</span>
       </div>
 
@@ -286,17 +266,14 @@ function selectModel(model: 'mlp' | 'ridge') {
           VCI Area Suprarenal
           <span class="optional">(optional)</span>
         </label>
-        <div class="input-wrapper">
-          <input
-            id="vci-supra"
-            v-model="vciAreaSuprarenal"
-            type="number"
-            placeholder="e.g. 3.52"
-            min="0"
-            step="any"
-          />
-          <span class="unit">cm&sup2;</span>
-        </div>
+        <CustomNumberInput
+          id="vci-supra"
+          v-model="vciAreaSuprarenal"
+          placeholder="e.g. 3.52"
+          min="0"
+          :step="0.01"
+          unit="cm²"
+        />
         <span class="hint">
           Cross-sectional area of the inferior vena cava at suprarenal level.
           <template v-if="!isVciMode">Activates Neural Net and VCI-based Ridge models.</template>
@@ -308,20 +285,17 @@ function selectModel(model: 'mlp' | 'ridge') {
           VCI Area Venoatrial
           <span class="optional">(optional)</span>
         </label>
-        <div class="input-wrapper">
-          <input
-            id="vci-veno"
-            v-model="vciAreaVenoatrial"
-            type="number"
-            placeholder="e.g. 4.09"
-            min="0"
-            step="any"
-          />
-          <span class="unit">cm&sup2;</span>
-        </div>
+        <CustomNumberInput
+          id="vci-veno"
+          v-model="vciAreaVenoatrial"
+          placeholder="e.g. 4.09"
+          min="0"
+          :step="0.01"
+          unit="cm²"
+        />
         <span class="hint">
           Cross-sectional area of the inferior vena cava at venoatrial level.
-          Add with Age for the full VCI model (R² 80%).
+          Add with Age for the full VCI model (CV R² 69.8%).
         </span>
       </div>
     </div>
@@ -345,9 +319,8 @@ function selectModel(model: 'mlp' | 'ridge') {
   background: var(--color-surface);
   backdrop-filter: blur(var(--blur));
   -webkit-backdrop-filter: blur(var(--blur));
-  border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
-  padding: 28px;
+  padding: 20px;
   box-shadow: var(--shadow-card);
 }
 
@@ -355,13 +328,13 @@ function selectModel(model: 'mlp' | 'ridge') {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 8px;
 }
 
 .form-header h2 {
-  font-size: 1.15rem;
+  font-size: 1.05rem;
   font-weight: 600;
   color: var(--color-text);
 }
@@ -376,7 +349,6 @@ function selectModel(model: 'mlp' | 'ridge') {
   font-weight: 500;
   background: rgba(255, 255, 255, 0.06);
   color: var(--color-text-secondary);
-  border: 1px solid var(--color-border);
 }
 
 .mode-dot {
@@ -403,7 +375,7 @@ function selectModel(model: 'mlp' | 'ridge') {
   content: '';
   flex: 1;
   height: 1px;
-  background: var(--color-border);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .section-badge {
@@ -417,13 +389,11 @@ function selectModel(model: 'mlp' | 'ridge') {
 .section-badge.body {
   background: rgba(52, 199, 89, 0.15);
   color: #6ee7a0;
-  border: 1px solid rgba(52, 199, 89, 0.25);
 }
 
 .section-badge.vci {
   background: rgba(1, 175, 171, 0.15);
   color: var(--color-primary-light);
-  border: 1px solid rgba(1, 175, 171, 0.25);
 }
 
 .section-hint {
@@ -438,18 +408,17 @@ function selectModel(model: 'mlp' | 'ridge') {
 .field-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: 12px;
 }
 
 /* Model toggle switch */
 .model-switch-row {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 24px;
-  padding: 12px 16px;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding: 10px 12px;
   background: rgba(1, 175, 171, 0.06);
-  border: 1px solid rgba(1, 175, 171, 0.15);
   border-radius: var(--radius-md);
 }
 
@@ -465,7 +434,7 @@ function selectModel(model: 'mlp' | 'ridge') {
   display: flex;
   background: rgba(0, 0, 0, 0.3);
   border-radius: 8px;
-  padding: 3px;
+  padding: 6px;
   flex: 1;
   max-width: 280px;
 }
@@ -474,7 +443,7 @@ function selectModel(model: 'mlp' | 'ridge') {
   flex: 1;
   position: relative;
   z-index: 1;
-  padding: 7px 16px;
+  padding: 10px 20px;
   border: none;
   background: transparent;
   color: var(--color-text-muted);
@@ -536,16 +505,16 @@ function selectModel(model: 'mlp' | 'ridge') {
 .fields {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  margin-bottom: 28px;
+  gap: 14px;
+  margin-bottom: 18px;
 }
 
 .field label {
   display: block;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 500;
   color: var(--color-text);
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .required {
@@ -559,17 +528,38 @@ function selectModel(model: 'mlp' | 'ridge') {
   font-size: 0.8rem;
 }
 
-.input-wrapper,
-.select-wrapper {
+.input-wrapper {
   position: relative;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: var(--radius-md);
+  overflow: hidden;
 }
 
-input,
-select {
+.input-wrapper::before {
+  background: var(--color-primary);
+  border-radius: 2px;
+  bottom: 6px;
+  content: '';
+  left: 0;
+  position: absolute;
+  top: 6px;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.2s ease;
+  width: 3px;
+  z-index: 1;
+}
+
+.input-wrapper:focus-within::before {
+  transform: scaleX(1);
+}
+
+input {
   width: 100%;
   padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--color-border);
+  padding-left: 19px;
+  background: transparent;
+  border: none;
   border-radius: var(--radius-md);
   color: var(--color-text);
   font-size: 0.95rem;
@@ -577,10 +567,8 @@ select {
   outline: none;
 }
 
-input:focus,
-select:focus {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(1, 175, 171, 0.15);
+input:focus {
+  outline: none;
 }
 
 input::placeholder {
@@ -601,26 +589,6 @@ input {
   padding-right: 48px;
 }
 
-select {
-  appearance: none;
-  cursor: pointer;
-  padding-right: 40px;
-}
-
-.select-wrapper::after {
-  content: '';
-  position: absolute;
-  right: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 0;
-  height: 0;
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
-  border-top: 5px solid var(--color-text-muted);
-  pointer-events: none;
-}
-
 select option {
   background: #1a2a40;
   color: var(--color-text);
@@ -636,7 +604,7 @@ select option {
 
 .actions {
   display: flex;
-  gap: 12px;
+  gap: 8px;
 }
 
 .btn-primary {
@@ -644,13 +612,13 @@ select option {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 14px 24px;
+  gap: 6px;
+  padding: 12px 16px;
   background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
   color: white;
   border: none;
   border-radius: var(--radius-md);
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s var(--ease);
@@ -671,12 +639,12 @@ select option {
 }
 
 .btn-secondary {
-  padding: 14px 20px;
-  background: transparent;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.06);
   color: var(--color-text-secondary);
-  border: 1px solid var(--color-border);
+  border: none;
   border-radius: var(--radius-md);
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s var(--ease);

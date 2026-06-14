@@ -28,7 +28,13 @@
 
 <style scoped>
 .footer {
-  padding: 0 0 20px;
+  width: 100%;
+  left: 0;
+  right: 0;
+  background: linear-gradient(180deg, rgba(10, 22, 40, 0.85) 0%, rgba(10, 22, 40, 0.95) 100%);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 12px 20px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -38,13 +44,14 @@
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  padding: 12px 16px;
+  padding: 12px;
   background: rgba(255, 204, 0, 0.06);
-  border: 1px solid rgba(255, 204, 0, 0.15);
   border-radius: var(--radius-md);
   font-size: 0.8rem;
   color: rgba(255, 204, 0, 0.8);
   line-height: 1.5;
+  margin: 0 auto;
+  width: auto;
 }
 
 .disclaimer .icon {
@@ -60,6 +67,10 @@
   gap: 8px;
   font-size: 0.8rem;
   color: var(--color-text-muted);
+  padding: 0 20px;
+  max-width: 720px;
+  width: 100%;
+  margin: 0 auto;
 }
 
 .separator {
