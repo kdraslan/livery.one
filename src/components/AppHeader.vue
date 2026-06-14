@@ -246,7 +246,7 @@ onUnmounted(() => {
   .model-switch {
     position: relative;
     display: flex;
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(255, 255, 255, 0.08);
     border-radius: 20px;
     padding: $modelSwitchPadding;
   }

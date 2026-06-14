@@ -7,6 +7,8 @@ import { trackPrediction } from '@/firebase/tracking';
 import CustomNumberInput from '@/components/CustomNumberInput.vue';
 import CustomGenderSelect from '@/components/CustomGenderSelect.vue';
 import Tooltip from '@/components/Tooltip.vue';
+import Drawer from '@/components/Drawer.vue';
+import ModelInfo from '@/components/ModelInfo.vue';
 import { MODEL_FEATURES } from '@/constants/features';
 
 interface PredictionEmitPayload {
@@ -40,6 +42,7 @@ const vciAreaSuprarenal = ref<string>('');
 const vciAreaVenoatrial = ref<string>('');
 const isAdvancedExpanded = ref(false);
 const confirmedVciSupra = ref<string>('');
+const showModelInfo = ref(false);
 
 const linearModel = useLinearModel();
 const mlpModel = useMLPModel();
@@ -200,9 +203,7 @@ function handleSubmit() {
 function handleVciBlur() {
   const normalized = vciAreaSuprarenal.value.replace(',', '.');
   const val = parseFloat(normalized);
-  if (!isNaN(val) && val > 0) {
-    confirmedVciSupra.value = normalized;
-  }
+  confirmedVciSupra.value = !isNaN(val) && val > 0 ? normalized : '';
 }
 
 function handleReset() {
@@ -222,9 +223,18 @@ function handleReset() {
   <form class="form-card" @submit.prevent="handleSubmit">
     <div class="form-header">
       <h2>Patient Measurements</h2>
-      <div v-if="!isEnhancedMode" class="mode-badge">
-        <span class="mode-dot" />
-        Standard Model
+      <div class="header-right">
+        <div v-if="!isEnhancedMode" class="mode-badge">
+          <span class="mode-dot" />
+          Standard Model
+        </div>
+        <Tooltip text="Learn about the prediction models and their features" position="left">
+          <button type="button" class="help-button" aria-label="Model information" @click="showModelInfo = true">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z" />
+            </svg>
+          </button>
+        </Tooltip>
       </div>
     </div>
 
@@ -326,7 +336,7 @@ function handleReset() {
             <span class="hint">Fill with VCI Venoatrial for highest VCI model accuracy.</span>
           </div>
 
-          <div class="vci-fields">
+          <div class="field-row">
             <div class="field">
               <label for="vci-supra">
                 VCI Area Suprarenal
@@ -371,7 +381,7 @@ function handleReset() {
     </div>
 
     <div class="actions">
-      <Tooltip :text="predictButtonTooltip">
+      <Tooltip :text="predictButtonTooltip" class="predict-button">
         <button type="submit" class="btn-primary" :disabled="!canSubmit">
           <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18">
             <path
@@ -384,6 +394,10 @@ function handleReset() {
       <button type="button" class="btn-secondary" @click="handleReset">Clear</button>
     </div>
   </form>
+
+  <Drawer v-model="showModelInfo" fit>
+    <ModelInfo />
+  </Drawer>
 </template>
 
 <style scoped>
@@ -394,6 +408,33 @@ function handleReset() {
   border-radius: var(--radius-xl);
   padding: 20px;
   box-shadow: var(--shadow-card);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.help-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.help-button:hover {
+  background: rgba(1, 175, 171, 0.15);
+  color: var(--color-primary-light);
+  transform: scale(1.1);
 }
 
 .form-header {
@@ -415,7 +456,8 @@ function handleReset() {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 12px;
+  height: 28px;
+  padding: 0 12px;
   border-radius: 100px;
   font-size: 0.75rem;
   font-weight: 500;
@@ -529,19 +571,6 @@ function handleReset() {
   gap: 14px;
 }
 
-.vci-fields {
-  display: flex;
-
-  @media (min-width: 560px) {
-    gap: 8px;
-  }
-
-  @media (max-width: 560px) {
-    flex-direction: column;
-    gap: 14px;
-  }
-}
-
 .field label {
   display: block;
   font-size: 0.8rem;
@@ -638,6 +667,11 @@ select option {
 .actions {
   display: flex;
   gap: 8px;
+}
+
+.predict-button {
+  display: flex;
+  width: 100%;
 }
 
 .btn-primary {
