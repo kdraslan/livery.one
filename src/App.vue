@@ -17,6 +17,7 @@ interface PredictionResult {
 const result = ref<PredictionResult | null>(null);
 const isLoading = ref(false);
 const showResults = ref(false);
+const enhancedModel = ref<'mlp' | 'ridge'>('ridge');
 
 function handlePrediction(prediction: PredictionResult) {
   result.value = prediction;
@@ -36,9 +37,10 @@ function handleReset() {
 <template>
   <div class="app">
     <div class="app-bg" />
-    <AppHeader />
+    <AppHeader v-model="enhancedModel" />
     <main class="main">
       <PredictionForm
+        v-model="enhancedModel"
         @predict="handlePrediction"
         @loading="handleLoading"
         @reset="handleReset"

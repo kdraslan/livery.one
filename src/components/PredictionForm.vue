@@ -7,7 +7,12 @@ import { trackPrediction } from '@/firebase/tracking';
 import CustomNumberInput from '@/components/CustomNumberInput.vue';
 import CustomGenderSelect from '@/components/CustomGenderSelect.vue';
 
+defineProps<{
+  modelValue?: 'mlp' | 'ridge'
+}>()
+
 const emit = defineEmits<{
+  'update:modelValue': [value: 'mlp' | 'ridge'];
   predict: [
     result: { weight: number; model: 'linear' | 'mlp' | 'ridge'; modelLabel: string },
   ];
@@ -22,7 +27,6 @@ const height = ref<string>('');
 const weight = ref<string>('');
 const vciAreaSuprarenal = ref<string>('');
 const vciAreaVenoatrial = ref<string>('');
-const enhancedModel = ref<'mlp' | 'ridge'>('ridge');
 
 const linearModel = useLinearModel();
 const mlpModel = useMLPModel();
@@ -84,7 +88,7 @@ function handleSubmit() {
 
   if (isEnhancedMode.value) {
     // MLP is only available in VCI mode (needs VCI Suprarenal)
-    if (enhancedModel.value === 'mlp' && isVciMode.value && mlpModel.isReady.value) {
+    if (modelValue === 'mlp' && isVciMode.value && mlpModel.isReady.value) {
       const result = mlpModel.predict({
         volume: vol,
         gender: gen,
@@ -130,10 +134,6 @@ function handleReset() {
   vciAreaVenoatrial.value = '';
   emit('reset');
 }
-
-function selectModel(model: 'mlp' | 'ridge') {
-  enhancedModel.value = model;
-}
 </script>
 
 <template>
@@ -145,34 +145,6 @@ function selectModel(model: 'mlp' | 'ridge') {
         Standard Model
       </div>
     </div>
-
-    <Transition name="switch-fade">
-      <div v-if="isVciMode" class="model-switch-row">
-        <span class="switch-label">Model</span>
-        <div class="model-switch">
-          <button
-            type="button"
-            class="switch-option"
-            :class="{ active: enhancedModel === 'ridge' }"
-            @click="selectModel('ridge')"
-          >
-            Ridge
-          </button>
-          <button
-            type="button"
-            class="switch-option"
-            :class="{ active: enhancedModel === 'mlp' }"
-            @click="selectModel('mlp')"
-          >
-            Neural Net
-          </button>
-          <div
-            class="switch-slider"
-            :class="{ right: enhancedModel === 'mlp' }"
-          />
-        </div>
-      </div>
-    </Transition>
 
     <div class="fields">
       <!-- Required fields -->
@@ -409,97 +381,6 @@ function selectModel(model: 'mlp' | 'ridge') {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
-}
-
-/* Model toggle switch */
-.model-switch-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 14px;
-  padding: 10px 12px;
-  background: rgba(1, 175, 171, 0.06);
-  border-radius: var(--radius-md);
-}
-
-.switch-label {
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: var(--color-primary-light);
-  white-space: nowrap;
-}
-
-.model-switch {
-  position: relative;
-  display: flex;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 8px;
-  padding: 6px;
-  flex: 1;
-  max-width: 280px;
-}
-
-.switch-option {
-  flex: 1;
-  position: relative;
-  z-index: 1;
-  padding: 10px 20px;
-  border: none;
-  background: transparent;
-  color: var(--color-text-muted);
-  font-size: 0.8rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: color 0.3s var(--ease);
-  text-align: center;
-  white-space: nowrap;
-}
-
-.switch-option.active {
-  color: #fff;
-}
-
-.switch-slider {
-  position: absolute;
-  top: 3px;
-  left: 3px;
-  width: calc(50% - 3px);
-  height: calc(100% - 6px);
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
-  border-radius: 6px;
-  transition: transform 0.3s var(--ease);
-  box-shadow: 0 2px 8px rgba(1, 175, 171, 0.3);
-}
-
-.switch-slider.right {
-  transform: translateX(100%);
-}
-
-/* Transition for switch row appearing */
-.switch-fade-enter-active {
-  transition: all 0.4s var(--ease);
-}
-
-.switch-fade-leave-active {
-  transition: all 0.25s var(--ease);
-}
-
-.switch-fade-enter-from {
-  opacity: 0;
-  max-height: 0;
-  margin-bottom: 0;
-  padding-top: 0;
-  padding-bottom: 0;
-  overflow: hidden;
-}
-
-.switch-fade-leave-to {
-  opacity: 0;
-  max-height: 0;
-  margin-bottom: 0;
-  padding-top: 0;
-  padding-bottom: 0;
-  overflow: hidden;
 }
 
 .fields {

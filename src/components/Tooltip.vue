@@ -1,38 +1,49 @@
 <script setup lang="ts">
-import { ref, nextTick } from 'vue'
+import { ref, nextTick, watch } from 'vue'
 
 defineProps<{
   text: string
 }>()
 
 const tooltipRef = ref<HTMLDivElement | null>(null)
+const isVisible = ref(false)
+let triggerElement: HTMLElement | null = null
 
 function onMouseEnter(e: MouseEvent) {
-  const trigger = e.currentTarget as HTMLElement
+  triggerElement = e.currentTarget as HTMLElement
+  isVisible.value = true
+}
+
+function onMouseLeave() {
+  isVisible.value = false
+}
+
+watch(isVisible, async (visible) => {
+  if (!visible || !triggerElement) return
+
+  await nextTick()
   const tooltip = tooltipRef.value
   if (!tooltip) return
 
-  nextTick(() => {
-    const triggerRect = trigger.getBoundingClientRect()
-    const tooltipRect = tooltip.getBoundingClientRect()
+  const triggerRect = triggerElement.getBoundingClientRect()
+  const tooltipRect = tooltip.getBoundingClientRect()
 
-    let left = triggerRect.left + triggerRect.width / 2 - tooltipRect.width / 2
-    let top = triggerRect.top - tooltipRect.height - 8
+  let left = triggerRect.left + triggerRect.width / 2 - tooltipRect.width / 2
+  let top = triggerRect.top - tooltipRect.height - 8
 
-    if (left < 0) left = 8
-    if (left + tooltipRect.width > window.innerWidth) left = window.innerWidth - tooltipRect.width - 8
+  if (left < 0) left = 8
+  if (left + tooltipRect.width > window.innerWidth) left = window.innerWidth - tooltipRect.width - 8
 
-    tooltip.style.left = left + 'px'
-    tooltip.style.top = top + 'px'
-  })
-}
+  tooltip.style.left = left + 'px'
+  tooltip.style.top = top + 'px'
+})
 </script>
 
 <template>
-  <div class="tooltip-trigger" @mouseenter="onMouseEnter">
+  <div class="tooltip-trigger" @mouseenter="onMouseEnter" @mouseleave="onMouseLeave">
     <slot />
     <Teleport to="body">
-      <div ref="tooltipRef" class="tooltip">
+      <div v-if="isVisible" ref="tooltipRef" class="tooltip">
         {{ text }}
       </div>
     </Teleport>
@@ -55,7 +66,6 @@ function onMouseEnter(e: MouseEvent) {
   white-space: nowrap;
   pointer-events: none;
   z-index: 10000;
-  opacity: 0;
   animation: fadeIn 0.2s ease forwards;
 }
 
