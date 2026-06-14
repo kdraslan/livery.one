@@ -1,9 +1,10 @@
+// Neural network (MLP) model for liver weight prediction from TensorFlow.js.
 import { ref } from 'vue';
 import * as tf from '@tensorflow/tfjs';
 
 export interface MLPPredictionInput {
   volume: number;
-  gender: number; // 0 = Female, 1 = Male
+  gender: number; // 0 = Female, 1 = Male.
   vciArea: number;
 }
 
@@ -16,13 +17,14 @@ export interface MLPPredictionResult {
 }
 
 interface ScalerParams {
-  input_mean: number[];
-  input_std: number[];
-  output_mean: number;
-  output_std: number;
+  inputMean: number[];
+  inputStd: number[];
+  outputMean: number;
+  outputStd: number;
+  featureNames: string[];
   metrics: {
     r2: number;
-    mae_grams: number;
+    maeGrams: number;
   };
 }
 
@@ -68,7 +70,7 @@ export function useMLPModel() {
 
     const rawInput = [input.volume, input.gender, input.vciArea];
     const normalized = rawInput.map(
-      (val, i) => (val - scalerParams!.input_mean[i]) / scalerParams!.input_std[i],
+      (val, i) => (val - scalerParams!.inputMean[i]) / scalerParams!.inputStd[i],
     );
 
     const inputTensor = tf.tensor2d([normalized]);
@@ -78,14 +80,14 @@ export function useMLPModel() {
     inputTensor.dispose();
     outputTensor.dispose();
 
-    const weight = scaledOutput * scalerParams.output_std + scalerParams.output_mean;
+    const weight = scaledOutput * scalerParams.outputStd + scalerParams.outputMean;
 
     return {
       weight: Math.round(weight * 100) / 100,
       model: 'mlp',
       modelLabel: 'Neural Network (MLP)',
       r2: scalerParams.metrics.r2,
-      mae: scalerParams.metrics.mae_grams,
+      mae: scalerParams.metrics.maeGrams,
     };
   }
 

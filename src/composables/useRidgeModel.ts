@@ -21,13 +21,13 @@ export interface RidgePredictionResult {
 }
 
 interface RidgeModelParams {
-  input_features: string[];
-  feature_names: string[];
-  scaler_mean: number[];
-  scaler_scale: number[];
-  ridge_intercept: number;
-  ridge_coefs: number[];
-  metrics: { r2: number; mae_grams: number; rmse_grams?: number; r2_cv_mean?: number };
+  inputFeatures: string[];
+  featureNames: string[];
+  scalerMean: number[];
+  scalerScale: number[];
+  ridgeIntercept: number;
+  ridgeCoefs: number[];
+  metrics: { r2: number; maeGrams: number; rmseGrams?: number; r2CvMean?: number };
 }
 
 interface RidgeParamsFile {
@@ -44,10 +44,17 @@ let params: RidgeParamsFile | null = null;
 
 const EPS = 1e-6;
 
+/**
+ * Generate polynomial features of degree 2 (quadratic terms + interactions).
+ * Matches sklearn's PolynomialFeatures(degree=2, include_bias=False) order:
+ *   [x0, x1, ..., xn, x0², x0*x1, ..., x0*xn, x1², x1*x2, ..., xn²]
+ *
+ * Used by all Ridge model variants during prediction.
+ */
 function poly2Features(x: number[]): number[] {
-  const out = [...x];
+  const out = [...x]; // Original features
   for (let i = 0; i < x.length; i++) {
-    for (let j = i; j < x.length; j++) {
+    for (let j = i; j < x.length; j++) { // j starts at i to avoid duplicates
       out.push(x[i] * x[j]);
     }
   }
@@ -61,8 +68,15 @@ function bmi(height: number, weight: number): number {
 
 /**
  * Build raw features matching the training order for a given variant.
- * All engineered features (VCI Total, Vol x Age, etc.) are computed here,
- * matching the Python training script exactly.
+ *
+ * Steps:
+ *   1. Compute all base features (volume, gender, age, height, weight, VCI areas)
+ *   2. Derive secondary features (BMI, VCI Total, VCI Diff, Vol×interactions)
+ *   3. Look up each feature in featureMap by name from p.input_features
+ *   4. Return ordered array matching the variant's expected feature order
+ *
+ * This ensures client-side features are built in the exact order and with the
+ * exact formulas used during Python model training.
  */
 function buildFeatures(p: RidgeModelParams, input: RidgePredictionInput): number[] {
   const vol = input.volume;
@@ -81,7 +95,7 @@ function buildFeatures(p: RidgeModelParams, input: RidgePredictionInput): number
   const volBmi = vol * b;
   const volWeight = vol * w;
 
-  // Map feature names to values — order must match input_features
+  // Map feature names to computed values
   const featureMap: Record<string, number> = {
     'Preoperation Volume (CC)': vol,
     'Gender': gen,
@@ -100,7 +114,8 @@ function buildFeatures(p: RidgeModelParams, input: RidgePredictionInput): number
     'Vol x Weight': volWeight,
   };
 
-  return p.input_features.map((name) => featureMap[name] ?? 0);
+  // Return features in the order specified by the model variant
+  return p.inputFeatures.map((name) => featureMap[name] ?? 0);
 }
 
 export function useRidgeModel() {
@@ -164,11 +179,11 @@ export function useRidgeModel() {
     const rawFeatures = buildFeatures(p, input);
     const features = poly2Features(rawFeatures);
 
-    const scaled = features.map((val, i) => (val - p.scaler_mean[i]) / p.scaler_scale[i]);
+    const scaled = features.map((val, i) => (val - p.scalerMean[i]) / p.scalerScale[i]);
 
-    let weight = p.ridge_intercept;
+    let weight = p.ridgeIntercept;
     for (let i = 0; i < scaled.length; i++) {
-      weight += p.ridge_coefs[i] * scaled[i];
+      weight += p.ridgeCoefs[i] * scaled[i];
     }
 
     return {
@@ -176,7 +191,7 @@ export function useRidgeModel() {
       model: 'ridge',
       modelLabel: label,
       r2: p.metrics.r2,
-      mae: p.metrics.mae_grams,
+      mae: p.metrics.maeGrams,
     };
   }
 

@@ -56,11 +56,11 @@ Models are trained in the companion `livery-estimator` repository. To re-export:
 cd ../livery-estimator
 
 # Poly2+Ridge variants (auto-selected by the frontend)
-python3 analyse_and_export.py
+python3 analyseAndExport.py
 cp tfjs_model/poly2_ridge_params.json ../livery-one/public/models/
 
 # MLP / Neural Network
-python3 export_mlp_model.py
+python3 exportMLPModel.py
 cp tfjs_model/tfjs/* ../livery-one/public/models/
 cp tfjs_model/scaler_params.json ../livery-one/public/models/
 ```

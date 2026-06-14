@@ -1,13 +1,5 @@
-/**
- * Linear regression model for liver weight prediction.
- * Uses only Preoperation Volume and Gender.
- *
- * Formula re-derived from updated dataset (102 patients, complete data):
- * Weight = 169.817 + 0.6444 * Volume - 0.6907 * Gender
- *
- * Performance: R² = 0.77, MAE = 32.24g
- */
-
+// Linear regression baseline model: weight = intercept + volume coefficient + gender coefficient.
+// Trained on 102 donors, validated at R² = 0.77 with MAE = ±32.2g.
 const INTERCEPT = 169.8165;
 const COEF_VOLUME = 0.644422;
 const COEF_GENDER = -0.690664;
