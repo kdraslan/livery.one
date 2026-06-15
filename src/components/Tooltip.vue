@@ -30,6 +30,7 @@ const coords = ref({ top: 0, left: 0 });
 const tipOffset = ref(0);
 
 function onMouseEnter() {
+  if (!window.matchMedia('(hover: hover)').matches) return; // Skip on touch; a tap synthesizes mouseenter and would stick.
   isVisible.value = true;
 }
 

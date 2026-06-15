@@ -181,7 +181,11 @@ function handleReset() {
           <span class="mode-dot" />
           Standard Model
         </div>
-        <Tooltip text="Learn about the prediction models and their features" position="left">
+        <Tooltip
+          class="help"
+          text="Learn about the prediction models and their features"
+          position="left"
+        >
           <button
             type="button"
             class="help-button"
@@ -373,6 +377,7 @@ function handleReset() {
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-card);
   padding: 20px;
+  position: relative; /* Anchors the help button when it pins top-right on narrow screens. */
 }
 
 .header-right {
@@ -648,6 +653,18 @@ function handleReset() {
 
   .section-hint {
     display: none;
+  }
+}
+
+@media (width <= 480px) {
+  .form-header {
+    padding-right: 34px; /* Reserve room for the pinned help button so the badge clears it. */
+  }
+
+  .help {
+    position: absolute;
+    right: 20px;
+    top: 20px;
   }
 }
 </style>

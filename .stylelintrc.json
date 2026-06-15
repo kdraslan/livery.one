@@ -12,6 +12,7 @@
     "value-keyword-case": null,
     "property-no-vendor-prefix": null,
     "value-no-vendor-prefix": null,
-    "keyframes-name-pattern": null
+    "keyframes-name-pattern": null,
+    "media-feature-range-notation": null
   }
 }

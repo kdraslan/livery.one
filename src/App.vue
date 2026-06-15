@@ -63,6 +63,7 @@ function handleVciModeChange(vci: boolean) {
     linear-gradient(160deg, #0a1628 0%, #0f2035 50%, #0a1628 100%);
   inset: 0;
   position: fixed;
+  transform: translateZ(0); /* Own layer; avoids iOS fixed-bg scroll repaint. */
   z-index: -1;
 }
 

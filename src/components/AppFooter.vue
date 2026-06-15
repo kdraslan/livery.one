@@ -17,17 +17,15 @@
       <span>&copy; {{ new Date().getFullYear() }} Livery.one</span>
       <span class="separator">&middot;</span>
       <span>Built by Kadir Aslan</span>
-      <span class="separator">&middot;</span>
-      <span>Supervised by Prof. Dr. R. Sarper Ökten</span>
+      <span class="separator separator-supervised">&middot;</span>
+      <span class="supervised">Supervised by Prof. Dr. R. Sarper Ökten</span>
     </div>
   </footer>
 </template>
 
 <style scoped>
 .footer {
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
-  background: linear-gradient(180deg, rgb(10, 22, 40, 0.85) 0%, rgb(10, 22, 40, 0.95) 100%);
+  background: linear-gradient(180deg, rgb(10, 22, 40, 0.92) 0%, rgb(10, 22, 40, 0.97) 100%);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -61,6 +59,7 @@
   align-items: center;
   color: var(--color-text-muted);
   display: flex;
+  flex-wrap: nowrap; /* Stay one line until the breakpoint switches to stacked. */
   font-size: 0.8rem;
   gap: 8px;
   justify-content: center;
@@ -72,5 +71,22 @@
 
 .separator {
   opacity: 0.5;
+}
+
+@media (max-width: 600px) {
+  .credits {
+    flex-wrap: wrap;
+  }
+
+  .separator-supervised {
+    display: none;
+  }
+
+  .supervised {
+    border-top: 1px solid var(--color-border);
+    flex-basis: 100%;
+    padding-top: 8px;
+    text-align: center;
+  }
 }
 </style>
