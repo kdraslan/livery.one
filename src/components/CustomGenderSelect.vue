@@ -1,23 +1,23 @@
 <script setup lang="ts">
 interface Props {
-  modelValue: string
+  modelValue?: string;
 }
 
 withDefaults(defineProps<Props>(), {
-  modelValue: ''
-})
+  modelValue: '',
+});
 
 const emit = defineEmits<{
-  'update:modelValue': [value: string]
-}>()
+  'update:modelValue': [value: string];
+}>();
 
 const options = [
   { value: '0', label: 'Female' },
-  { value: '1', label: 'Male' }
-]
+  { value: '1', label: 'Male' },
+];
 
 function select(value: string) {
-  emit('update:modelValue', value)
+  emit('update:modelValue', value);
 }
 </script>
 
@@ -42,25 +42,25 @@ function select(value: string) {
 }
 
 .option {
-  flex: 1;
-  padding: 10px 16px;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgb(255, 255, 255, 0.04);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   color: var(--color-text-muted);
+  cursor: pointer;
+  flex: 1;
   font-size: 0.9rem;
   font-weight: 500;
-  cursor: pointer;
+  padding: 10px 16px;
   transition: all 0.2s ease;
 }
 
 .option:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgb(255, 255, 255, 0.08);
   color: var(--color-text-secondary);
 }
 
 .option.active {
-  background: rgba(1, 175, 171, 0.15);
+  background: var(--color-primary-soft);
   color: var(--color-primary-light);
 }
 </style>

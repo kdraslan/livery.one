@@ -1,12 +1,10 @@
-// Linear regression baseline model: weight = intercept + volume coefficient + gender coefficient.
-// Trained on 102 donors, validated at R² = 0.77 with MAE = ±32.2g.
-const INTERCEPT = 169.8165;
+const INTERCEPT = 169.8165; // Trained on 102 donors, validated at R² 0.77, MAE 32.2g.
 const COEF_VOLUME = 0.644422;
 const COEF_GENDER = -0.690664;
 
 export interface LinearPredictionInput {
   volume: number;
-  gender: number; // 0 = Female, 1 = Male
+  gender: number; // 0 = Female, 1 = Male.
 }
 
 export interface LinearPredictionResult {

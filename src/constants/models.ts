@@ -1,12 +1,14 @@
-import { FEATURE_DEFINITIONS } from '@/constants/features';
+import type { ModelType } from '@/types';
+
+import { FEATURE_DEFINITIONS, type FeatureName } from '@/constants/features';
 
 export interface ModelInfo {
   name: string;
-  type: 'linear' | 'mlp' | 'ridge';
+  type: ModelType;
   description: string;
-  features: string[];
-  r2: number; // Test R² as a percentage
-  mae: number; // Mean absolute error in grams
+  features: FeatureName[];
+  r2: number; // Percentage, not a fraction.
+  mae: number; // Grams.
   best?: boolean;
 }
 
@@ -53,7 +55,11 @@ export const MODEL_INFO: ModelInfo[] = [
     name: 'Neural Network',
     type: 'mlp',
     description: 'Deep learning model for vascular-based prediction. Needs VCI Suprarenal.',
-    features: [FEATURE_DEFINITIONS.VOLUME, FEATURE_DEFINITIONS.GENDER, FEATURE_DEFINITIONS.VCI_SUPRA],
+    features: [
+      FEATURE_DEFINITIONS.VOLUME,
+      FEATURE_DEFINITIONS.GENDER,
+      FEATURE_DEFINITIONS.VCI_SUPRA,
+    ],
     r2: 79.9,
     mae: 32.1,
   },
@@ -75,7 +81,11 @@ export const MODEL_INFO: ModelInfo[] = [
     name: 'Ridge (VCI)',
     type: 'ridge',
     description: 'Minimal vascular model when only VCI Suprarenal is available.',
-    features: [FEATURE_DEFINITIONS.VOLUME, FEATURE_DEFINITIONS.GENDER, FEATURE_DEFINITIONS.VCI_SUPRA],
+    features: [
+      FEATURE_DEFINITIONS.VOLUME,
+      FEATURE_DEFINITIONS.GENDER,
+      FEATURE_DEFINITIONS.VCI_SUPRA,
+    ],
     r2: 73.9,
     mae: 34.6,
   },

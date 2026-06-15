@@ -1,0 +1,17 @@
+{
+  "extends": ["stylelint-config-standard", "stylelint-config-standard-vue"],
+  "plugins": ["stylelint-order"],
+  "rules": {
+    "order/properties-alphabetical-order": true,
+    "alpha-value-notation": null,
+    "color-function-notation": null,
+    "declaration-empty-line-before": null,
+    "custom-property-empty-line-before": null,
+    "selector-class-pattern": null,
+    "no-descending-specificity": null,
+    "value-keyword-case": null,
+    "property-no-vendor-prefix": null,
+    "value-no-vendor-prefix": null,
+    "keyframes-name-pattern": null
+  }
+}

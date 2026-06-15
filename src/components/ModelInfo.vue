@@ -18,7 +18,9 @@ import { MODEL_INFO } from '@/constants/models';
           <span class="model-name">{{ model.name }}</span>
           <span v-if="model.best" class="best-badge">Most accurate</span>
         </div>
-        <p class="model-description">{{ model.description }}</p>
+        <p class="model-description">
+          {{ model.description }}
+        </p>
         <div class="model-features">
           <span v-for="feature in model.features" :key="feature" class="feature-chip">
             {{ feature }}
@@ -35,22 +37,22 @@ import { MODEL_INFO } from '@/constants/models';
 
 <style scoped>
 .model-info {
-  padding: 24px 20px;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  padding: 24px 20px;
 }
 
 .info-header h3 {
+  color: var(--color-text);
   font-size: 1.1rem;
   font-weight: 600;
-  color: var(--color-text);
   margin-bottom: 6px;
 }
 
 .info-subtitle {
-  font-size: 0.8rem;
   color: var(--color-text-secondary);
+  font-size: 0.8rem;
   line-height: 1.5;
 }
 
@@ -61,29 +63,29 @@ import { MODEL_INFO } from '@/constants/models';
 }
 
 .model-card {
-  position: relative;
+  background: rgb(255, 255, 255, 0.03);
+  border-radius: var(--radius-md);
   display: flex;
   flex-direction: column;
   gap: 8px;
   padding: 14px;
   padding-left: 18px;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: var(--radius-md);
+  position: relative;
 }
 
 .model-card::before {
+  background: var(--color-text-muted);
+  border-radius: 2px;
+  bottom: 12px;
   content: '';
+  left: -12px;
   position: absolute;
   top: 12px;
-  bottom: 12px;
-  left: -12px;
   width: 4px;
-  border-radius: 2px;
-  background: var(--color-text-muted);
 }
 
 .model-card.linear::before {
-  background: #a5a4e3;
+  background: var(--color-accent-light);
 }
 
 .model-card.mlp::before {
@@ -91,37 +93,37 @@ import { MODEL_INFO } from '@/constants/models';
 }
 
 .model-card.ridge::before {
-  background: #6ee7a0;
+  background: var(--color-success-light);
 }
 
 .model-card-header {
-  display: flex;
   align-items: center;
-  justify-content: space-between;
+  display: flex;
   gap: 8px;
+  justify-content: space-between;
 }
 
 .model-name {
+  color: var(--color-text);
   font-size: 0.9rem;
   font-weight: 600;
-  color: var(--color-text);
 }
 
 .best-badge {
+  background: var(--color-success-soft);
+  border-radius: 100px;
+  color: var(--color-success-light);
   font-size: 0.65rem;
   font-weight: 600;
-  text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #6ee7a0;
-  background: rgba(52, 199, 89, 0.15);
   padding: 2px 8px;
-  border-radius: 100px;
+  text-transform: uppercase;
   white-space: nowrap;
 }
 
 .model-description {
-  font-size: 0.78rem;
   color: var(--color-text-secondary);
+  font-size: 0.78rem;
   line-height: 1.4;
 }
 
@@ -132,12 +134,12 @@ import { MODEL_INFO } from '@/constants/models';
 }
 
 .feature-chip {
+  background: var(--color-primary-faint);
+  border-radius: 4px;
+  color: var(--color-primary-light);
   font-size: 0.72rem;
   font-weight: 500;
-  color: var(--color-primary-light);
-  background: rgba(1, 175, 171, 0.1);
   padding: 3px 9px;
-  border-radius: 4px;
 }
 
 .model-metrics {
@@ -147,11 +149,11 @@ import { MODEL_INFO } from '@/constants/models';
 }
 
 .metric-pill {
+  background: rgb(255, 255, 255, 0.05);
+  border-radius: 100px;
+  color: var(--color-text-secondary);
   font-size: 0.7rem;
   font-weight: 600;
-  color: var(--color-text-secondary);
-  background: rgba(255, 255, 255, 0.05);
   padding: 3px 10px;
-  border-radius: 100px;
 }
 </style>

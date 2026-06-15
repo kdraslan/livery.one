@@ -1,6 +1,3 @@
-<script setup lang="ts">
-</script>
-
 <template>
   <footer class="footer">
     <div class="disclaimer">
@@ -12,8 +9,8 @@
         />
       </svg>
       <span>
-        This tool is still under active development. Predictions should be used in conjunction
-        with professional medical judgment and clinical expertise.
+        This tool is still under active development. Predictions should be used in conjunction with
+        professional medical judgment and clinical expertise.
       </span>
     </div>
     <div class="credits">
@@ -28,29 +25,29 @@
 
 <style scoped>
 .footer {
-  width: 100%;
-  left: 0;
-  right: 0;
-  background: linear-gradient(180deg, rgba(10, 22, 40, 0.85) 0%, rgba(10, 22, 40, 0.95) 100%);
-  backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  padding: 12px 20px;
+  backdrop-filter: blur(8px);
+  background: linear-gradient(180deg, rgb(10, 22, 40, 0.85) 0%, rgb(10, 22, 40, 0.95) 100%);
   display: flex;
   flex-direction: column;
   gap: 8px;
+  left: 0;
+  padding: 12px 20px;
+  right: 0;
+  width: 100%;
 }
 
 .disclaimer {
-  display: flex;
   align-items: flex-start;
-  gap: 8px;
-  padding: 12px;
-  background: rgba(255, 204, 0, 0.06);
+  background: rgb(255, 204, 0, 0.06);
   border-radius: var(--radius-md);
+  color: rgb(255, 204, 0, 0.8);
+  display: flex;
   font-size: 0.8rem;
-  color: rgba(255, 204, 0, 0.8);
+  gap: 8px;
   line-height: 1.5;
   margin: 0 auto;
+  padding: 12px;
   width: auto;
 }
 
@@ -61,16 +58,16 @@
 }
 
 .credits {
-  display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-size: 0.8rem;
   color: var(--color-text-muted);
-  padding: 0 20px;
-  max-width: 720px;
-  width: 100%;
+  display: flex;
+  font-size: 0.8rem;
+  gap: 8px;
+  justify-content: center;
   margin: 0 auto;
+  max-width: 720px;
+  padding: 0 20px;
+  width: 100%;
 }
 
 .separator {

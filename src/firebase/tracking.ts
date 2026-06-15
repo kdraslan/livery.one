@@ -1,7 +1,10 @@
 import { logEvent } from 'firebase/analytics';
+
+import type { ModelType } from '@/types';
+
 import { getFirebaseAnalytics } from './config';
 
-export function trackPrediction(model: 'linear' | 'mlp' | 'ridge'): void {
+export function trackPrediction(model: ModelType): void {
   const analytics = getFirebaseAnalytics();
   if (!analytics) return;
 

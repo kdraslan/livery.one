@@ -1,24 +1,24 @@
 <script setup lang="ts">
 interface Props {
-  modelValue: string
-  placeholder?: string
-  min?: number
-  step?: number
-  unit?: string
+  modelValue: string;
+  placeholder?: string;
+  min?: number;
+  step?: number;
+  unit?: string;
 }
 
 withDefaults(defineProps<Props>(), {
   step: 1,
-})
+});
 
 const emit = defineEmits<{
-  'update:modelValue': [value: string]
-  blur: []
-}>()
+  'update:modelValue': [value: string];
+  blur: [];
+}>();
 
 function handleInput(e: Event) {
-  const target = e.target as HTMLInputElement
-  emit('update:modelValue', target.value)
+  const target = e.target as HTMLInputElement;
+  emit('update:modelValue', target.value);
 }
 </script>
 
@@ -40,17 +40,17 @@ function handleInput(e: Event) {
 
 <style scoped>
 .input-group {
-  position: relative;
-  display: flex;
   align-items: center;
-  background: rgba(255, 255, 255, 0.04);
-  border-radius: 8px;
+  background: rgb(255, 255, 255, 0.04);
+  border-radius: var(--radius-sm);
+  display: flex;
   overflow: hidden;
+  position: relative;
   transition: all 0.2s ease;
 }
 
 .input-group.filled {
-  background: rgba(1, 175, 171, 0.15);
+  background: var(--color-primary-soft);
 }
 
 .input-group::before {
@@ -72,27 +72,24 @@ function handleInput(e: Event) {
 }
 
 .input {
-  flex: 1;
+  -moz-appearance: textfield; /* Hide native number spinners. */
+  -webkit-appearance: textfield;
+  appearance: textfield;
   background: transparent;
   border: none;
+  color: var(--color-text);
+  flex: 1;
+  font-size: 14px;
   padding: 10px 12px;
   padding-left: 15px;
   padding-right: 48px;
-  font-size: 14px;
-  color: var(--color-text);
   transition: all 0.2s;
-
-  /* Hide ALL native spinner buttons */
-  appearance: none;
-  -moz-appearance: textfield;
-  -webkit-appearance: textfield;
 }
 
 .input-group.filled .input {
   color: var(--color-primary-light);
 }
 
-/* Chrome, Safari, Edge, Opera */
 .input::-webkit-outer-spin-button,
 .input::-webkit-inner-spin-button {
   -webkit-appearance: none;
@@ -100,20 +97,15 @@ function handleInput(e: Event) {
   margin: 0;
 }
 
-/* Firefox */
-.input[type=number] {
-  -moz-appearance: textfield;
-}
-
 .input:focus {
   outline: none;
 }
 
 .unit {
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  pointer-events: none;
   position: absolute;
   right: 12px;
-  font-size: 12px;
-  color: var(--color-text-secondary);
-  pointer-events: none;
 }
 </style>

@@ -1,6 +1,5 @@
-// Neural network (MLP) model for liver weight prediction from TensorFlow.js.
-import { ref } from 'vue';
 import * as tf from '@tensorflow/tfjs';
+import { ref } from 'vue';
 
 export interface MLPPredictionInput {
   volume: number;

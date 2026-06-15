@@ -3,10 +3,8 @@ import { ref } from 'vue';
 export interface RidgePredictionInput {
   volume: number;
   gender: number;
-  // Body measurements
   height?: number;
   weight?: number;
-  // VCI measurements
   vciArea?: number;
   age?: number;
   vciVenoatrial?: number;
@@ -44,18 +42,11 @@ let params: RidgeParamsFile | null = null;
 
 const EPS = 1e-6;
 
-/**
- * Generate polynomial features of degree 2 (quadratic terms + interactions).
- * Matches sklearn's PolynomialFeatures(degree=2, include_bias=False) order:
- *   [x0, x1, ..., xn, x0², x0*x1, ..., x0*xn, x1², x1*x2, ..., xn²]
- *
- * Used by all Ridge model variants during prediction.
- */
 function poly2Features(x: number[]): number[] {
-  const out = [...x]; // Original features
+  const out = [...x]; // Mirror sklearn PolynomialFeatures(degree=2, include_bias=False) order.
   for (let i = 0; i < x.length; i++) {
-    for (let j = i; j < x.length; j++) { // j starts at i to avoid duplicates
-      out.push(x[i] * x[j]);
+    for (let j = i; j < x.length; j++) {
+      out.push(x[i] * x[j]); // j starts at i to skip duplicate cross terms.
     }
   }
   return out;
@@ -66,18 +57,6 @@ function bmi(height: number, weight: number): number {
   return weight / (h * h);
 }
 
-/**
- * Build raw features matching the training order for a given variant.
- *
- * Steps:
- *   1. Compute all base features (volume, gender, age, height, weight, VCI areas)
- *   2. Derive secondary features (BMI, VCI Total, VCI Diff, Vol×interactions)
- *   3. Look up each feature in featureMap by name from p.input_features
- *   4. Return ordered array matching the variant's expected feature order
- *
- * This ensures client-side features are built in the exact order and with the
- * exact formulas used during Python model training.
- */
 function buildFeatures(p: RidgeModelParams, input: RidgePredictionInput): number[] {
   const vol = input.volume;
   const gen = input.gender;
@@ -95,14 +74,13 @@ function buildFeatures(p: RidgeModelParams, input: RidgePredictionInput): number
   const volBmi = vol * b;
   const volWeight = vol * w;
 
-  // Map feature names to computed values
   const featureMap: Record<string, number> = {
     'Preoperation Volume (CC)': vol,
-    'Gender': gen,
-    'Age': age,
+    Gender: gen,
+    Age: age,
     'Height (cm)': h,
     'Weight (kg)': w,
-    'BMI': b,
+    BMI: b,
     'VCI Area Suprarenal (cm²)': vciSupra,
     'VCI Area Venoatrial (cm²)': vciVeno,
     'VCI Total (cm²)': vciTotal,
@@ -114,8 +92,7 @@ function buildFeatures(p: RidgeModelParams, input: RidgePredictionInput): number
     'Vol x Weight': volWeight,
   };
 
-  // Return features in the order specified by the model variant
-  return p.input_features.map((name: string) => featureMap[name] ?? 0);
+  return p.input_features.map((name: string) => featureMap[name] ?? 0); // Order per trained variant.
 }
 
 export function useRidgeModel() {
@@ -147,14 +124,16 @@ export function useRidgeModel() {
   function predict(input: RidgePredictionInput): RidgePredictionResult | null {
     if (!params) return null;
 
-    const hasBody = input.height != null && input.height > 0 && input.weight != null && input.weight > 0;
+    const hasBody =
+      input.height != null && input.height > 0 && input.weight != null && input.weight > 0;
     const hasVci = input.vciArea != null && input.vciArea > 0;
-    const hasFullVci = hasVci && input.age != null && input.age >= 0 && input.vciVenoatrial != null && input.vciVenoatrial > 0;
+    const hasFullVci =
+      hasVci &&
+      input.age != null &&
+      input.age >= 0 &&
+      input.vciVenoatrial != null &&
+      input.vciVenoatrial > 0;
 
-    // Select best variant based on available inputs.
-    // body_full (R²=0.833, MAE=32.48g) is intentionally skipped — body_simple (R²=0.859, MAE=30.30g)
-    // outperforms it. Adding age to body measurements actually reduces accuracy, so we use body_simple.
-    // Similarly, full (R²=0.796) is used for VCI+Age since body+VCI+Age goes to 'all' variant.
     let variant: keyof RidgeParamsFile;
     let label: string;
 
@@ -162,7 +141,7 @@ export function useRidgeModel() {
       variant = 'all';
       label = 'Ridge (All Features)';
     } else if (hasBody) {
-      label = 'Ridge (Body)';
+      label = 'Ridge (Body)'; // body_simple (R² 0.859) beats body_full, so age is dropped here.
       variant = 'body_simple';
     } else if (hasFullVci) {
       variant = 'full';

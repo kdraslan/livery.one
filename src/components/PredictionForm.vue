@@ -1,36 +1,29 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
+
+import type { EnhancedModelType, PredictionResult } from '@/types';
+
+import CustomGenderSelect from '@/components/CustomGenderSelect.vue';
+import CustomNumberInput from '@/components/CustomNumberInput.vue';
+import Drawer from '@/components/Drawer.vue';
+import ModelInfo from '@/components/ModelInfo.vue';
+import Tooltip from '@/components/Tooltip.vue';
 import { useLinearModel } from '@/composables/useLinearModel';
 import { useMLPModel } from '@/composables/useMLPModel';
 import { useRidgeModel } from '@/composables/useRidgeModel';
+import { FEATURE_DEFINITIONS, MODEL_FEATURES } from '@/constants/features';
 import { trackPrediction } from '@/firebase/tracking';
-import CustomNumberInput from '@/components/CustomNumberInput.vue';
-import CustomGenderSelect from '@/components/CustomGenderSelect.vue';
-import Tooltip from '@/components/Tooltip.vue';
-import Drawer from '@/components/Drawer.vue';
-import ModelInfo from '@/components/ModelInfo.vue';
-import { MODEL_FEATURES } from '@/constants/features';
-
-interface PredictionEmitPayload {
-  weight: number;
-  model: 'linear' | 'mlp' | 'ridge';
-  modelLabel: string;
-  r2?: number;
-  mae?: number;
-  usedFeatures?: string[];
-  enteredFeatures?: string[];
-}
+import { isPositive } from '@/utils/number';
 
 const props = defineProps<{
-  modelValue?: 'mlp' | 'ridge'
-}>()
+  modelValue?: EnhancedModelType;
+}>();
 
 const emit = defineEmits<{
-  'update:modelValue': [value: 'mlp' | 'ridge']
-  predict: [result: PredictionEmitPayload]
-  loading: [isLoading: boolean]
-  reset: []
-  'vci-mode': [isVci: boolean]
+  'update:modelValue': [value: EnhancedModelType];
+  predict: [result: PredictionResult];
+  reset: [];
+  'vci-mode': [isVci: boolean];
 }>();
 
 const volume = ref<string>('');
@@ -48,37 +41,17 @@ const linearModel = useLinearModel();
 const mlpModel = useMLPModel();
 const ridgeModel = useRidgeModel();
 
-// Body mode: height + weight provided (best non-VCI upgrade: CV R² 0.753)
-const isBodyMode = computed(() => {
-  const h = parseFloat(height.value);
-  const w = parseFloat(weight.value);
-  return !isNaN(h) && h > 0 && !isNaN(w) && w > 0;
-});
+const isBodyMode = computed(() => isPositive(height.value) && isPositive(weight.value));
 
-// VCI mode: VCI suprarenal provided (uses confirmed value, only updates on blur)
-const isVciMode = computed(() => {
-  const val = parseFloat(confirmedVciSupra.value);
-  return !isNaN(val) && val > 0;
-});
+const isVciMode = computed(() => isPositive(confirmedVciSupra.value)); // Confirmed value, updated on blur.
 
-// Enhanced mode: either body or VCI fields provided
 const isEnhancedMode = computed(() => isBodyMode.value || isVciMode.value);
 
-// Full VCI mode: age + both VCI fields provided
-const isFullVciMode = computed(() => {
-  const ageVal = parseFloat(age.value);
-  const vciVenoVal = parseFloat(vciAreaVenoatrial.value);
-  return isVciMode.value && !isNaN(ageVal) && ageVal > 0 && !isNaN(vciVenoVal) && vciVenoVal > 0;
-});
+const isFullVciMode = computed(
+  () => isVciMode.value && isPositive(age.value) && isPositive(vciAreaVenoatrial.value),
+);
 
-// Best CV R² label to show in hints
-const bestActiveR2 = computed(() => {
-  if (isBodyMode.value && !isVciMode.value) return '75.3%'; // Body Full
-  if (isBodyMode.value && isVciMode.value) return '71.9%'; // All Features
-  if (isFullVciMode.value) return '69.8%'; // Full VCI
-  if (isVciMode.value) return '67.0%'; // Partial VCI
-  return null;
-});
+const bestActiveR2 = computed(() => (isVciMode.value ? '71.9%' : '75.3%')); // Only shown in body mode.
 
 const predictButtonTooltip = computed(() => {
   let model = 'Linear';
@@ -101,35 +74,32 @@ const predictButtonTooltip = computed(() => {
   return `${model}: ${features}`;
 });
 
-const canSubmit = computed(() => {
-  const vol = parseFloat(volume.value);
-  return !isNaN(vol) && vol > 0 && gender.value !== '';
-});
+const canSubmit = computed(() => isPositive(volume.value) && gender.value !== '');
 
 watch(isVciMode, (vci) => {
   emit('vci-mode', vci);
 });
 
-onMounted(async () => {
-  emit('loading', true);
-  await Promise.all([mlpModel.load(), ridgeModel.load()]);
-  emit('loading', false);
+onMounted(() => {
+  Promise.all([mlpModel.load(), ridgeModel.load()]);
 });
 
 function getEnteredFeatures(): string[] {
-  const features = ['Volume', 'Gender'];
-  const h = parseFloat(height.value);
-  const w = parseFloat(weight.value);
-  const ageVal = parseFloat(age.value);
-  const vciSupra = parseFloat(vciAreaSuprarenal.value);
-  const vciVeno = parseFloat(vciAreaVenoatrial.value);
-
-  if (!isNaN(h) && h > 0) features.push('Height');
-  if (!isNaN(w) && w > 0) features.push('Weight');
-  if (!isNaN(ageVal) && ageVal > 0) features.push('Age');
-  if (!isNaN(vciSupra) && vciSupra > 0) features.push('VCI Suprarenal');
-  if (!isNaN(vciVeno) && vciVeno > 0) features.push('VCI Venoatrial');
+  const features: string[] = [FEATURE_DEFINITIONS.VOLUME, FEATURE_DEFINITIONS.GENDER];
+  if (isPositive(height.value)) features.push(FEATURE_DEFINITIONS.HEIGHT);
+  if (isPositive(weight.value)) features.push(FEATURE_DEFINITIONS.WEIGHT);
+  if (isPositive(age.value)) features.push(FEATURE_DEFINITIONS.AGE);
+  if (isPositive(vciAreaSuprarenal.value)) features.push(FEATURE_DEFINITIONS.VCI_SUPRA);
+  if (isPositive(vciAreaVenoatrial.value)) features.push(FEATURE_DEFINITIONS.VCI_VENO);
   return features;
+}
+
+function ridgeVariantFeatures(hasBody: boolean, hasVci: boolean, hasFullVci: boolean): string[] {
+  if (hasBody && hasFullVci) return [...MODEL_FEATURES.ridge.all];
+  if (hasBody) return [...MODEL_FEATURES.ridge.body_simple];
+  if (hasFullVci) return [...MODEL_FEATURES.ridge.full];
+  if (hasVci) return [...MODEL_FEATURES.ridge.partial];
+  return [...MODEL_FEATURES.ridge.partial];
 }
 
 function handleSubmit() {
@@ -145,13 +115,8 @@ function handleSubmit() {
   const enteredFeatures = getEnteredFeatures();
 
   if (isEnhancedMode.value) {
-    // MLP is only available in VCI mode (needs VCI Suprarenal)
     if (props.modelValue === 'mlp' && isVciMode.value && mlpModel.isReady.value) {
-      const result = mlpModel.predict({
-        volume: vol,
-        gender: gen,
-        vciArea: vciSupra,
-      });
+      const result = mlpModel.predict({ volume: vol, gender: gen, vciArea: vciSupra });
       if (result) {
         trackPrediction('mlp');
         emit('predict', { ...result, usedFeatures: [...MODEL_FEATURES.mlp], enteredFeatures });
@@ -170,26 +135,15 @@ function handleSubmit() {
         vciVenoatrial: isNaN(vciVeno) ? undefined : vciVeno,
       });
       if (result) {
-        // Determine which Ridge variant was selected based on available inputs
-        const hasBody = !isNaN(h) && h > 0 && !isNaN(w) && w > 0;
-        const hasVci = !isNaN(vciSupra) && vciSupra > 0;
-        const hasFullVci = hasVci && !isNaN(ageVal) && ageVal > 0 && !isNaN(vciVeno) && vciVeno > 0;
-
-        let usedFeatures: string[];
-        if (hasBody && hasFullVci) {
-          usedFeatures = [...MODEL_FEATURES.ridge.all];
-        } else if (hasBody) {
-          usedFeatures = [...MODEL_FEATURES.ridge.body_simple];
-        } else if (hasFullVci) {
-          usedFeatures = [...MODEL_FEATURES.ridge.full];
-        } else if (hasVci) {
-          usedFeatures = [...MODEL_FEATURES.ridge.partial];
-        } else {
-          usedFeatures = [...MODEL_FEATURES.ridge.partial];
-        }
-
+        const hasBody = isPositive(height.value) && isPositive(weight.value);
+        const hasVci = isPositive(vciAreaSuprarenal.value);
+        const hasFullVci = hasVci && isPositive(age.value) && isPositive(vciAreaVenoatrial.value);
         trackPrediction('ridge');
-        emit('predict', { ...result, usedFeatures, enteredFeatures });
+        emit('predict', {
+          ...result,
+          usedFeatures: ridgeVariantFeatures(hasBody, hasVci, hasFullVci),
+          enteredFeatures,
+        });
         return;
       }
     }
@@ -201,9 +155,8 @@ function handleSubmit() {
 }
 
 function handleVciBlur() {
-  const normalized = vciAreaSuprarenal.value.replace(',', '.');
-  const val = parseFloat(normalized);
-  confirmedVciSupra.value = !isNaN(val) && val > 0 ? normalized : '';
+  const normalized = vciAreaSuprarenal.value.replace(',', '.'); // Accept comma decimals.
+  confirmedVciSupra.value = isPositive(normalized) ? normalized : '';
 }
 
 function handleReset() {
@@ -229,9 +182,16 @@ function handleReset() {
           Standard Model
         </div>
         <Tooltip text="Learn about the prediction models and their features" position="left">
-          <button type="button" class="help-button" aria-label="Model information" @click="showModelInfo = true">
+          <button
+            type="button"
+            class="help-button"
+            aria-label="Model information"
+            @click="showModelInfo = true"
+          >
             <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z" />
+              <path
+                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"
+              />
             </svg>
           </button>
         </Tooltip>
@@ -245,13 +205,7 @@ function handleReset() {
           Preoperation Volume
           <span class="required">*</span>
         </label>
-        <CustomNumberInput
-          id="volume"
-          v-model="volume"
-          placeholder="e.g. 950"
-          :min="0"
-          unit="CC"
-        />
+        <CustomNumberInput id="volume" v-model="volume" placeholder="e.g. 950" :min="0" unit="CC" />
         <span class="hint">Liver volume estimated from CT scan</span>
       </div>
 
@@ -264,7 +218,6 @@ function handleReset() {
         <span class="hint">Biological sex of the patient</span>
       </div>
 
-      <!-- Body measurements section -->
       <div class="section-divider">
         <span>Body Measurements</span>
         <span v-if="isBodyMode" class="section-badge body">R² {{ bestActiveR2 }}</span>
@@ -301,7 +254,6 @@ function handleReset() {
         </div>
       </div>
 
-      <!-- VCI / advanced section -->
       <button
         type="button"
         class="section-divider"
@@ -311,9 +263,20 @@ function handleReset() {
         <div class="section-controls">
           <span v-if="isFullVciMode" class="section-badge vci">CV R² 69.8%</span>
           <span v-else-if="isVciMode" class="section-badge vci">CV R² 67.0%</span>
-          <span v-else class="section-hint">Optional — add for VCI-based models</span>
-          <svg class="chevron" :class="{ expanded: isAdvancedExpanded }" viewBox="0 0 20 20" fill="currentColor" width="18" height="18">
-            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+          <span v-else class="section-hint">Optional, add for VCI-based models</span>
+          <svg
+            class="chevron"
+            :class="{ expanded: isAdvancedExpanded }"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+            width="18"
+            height="18"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+              clip-rule="evenodd"
+            />
           </svg>
         </div>
       </button>
@@ -353,7 +316,9 @@ function handleReset() {
               />
               <span class="hint">
                 Cross-sectional area of the inferior vena cava at suprarenal level.
-                <template v-if="!isVciMode">Activates Neural Net and VCI-based Ridge models.</template>
+                <template v-if="!isVciMode"
+                  >Activates Neural Net and VCI-based Ridge models.</template
+                >
               </span>
             </div>
 
@@ -371,8 +336,8 @@ function handleReset() {
                 unit="cm²"
               />
               <span class="hint">
-                Cross-sectional area of the inferior vena cava at venoatrial level.
-                Add with Age for the full VCI model (CV R² 69.8%).
+                Cross-sectional area of the inferior vena cava at venoatrial level. Add with Age for
+                the full VCI model (CV R² 69.8%).
               </span>
             </div>
           </div>
@@ -402,93 +367,97 @@ function handleReset() {
 
 <style scoped>
 .form-card {
-  background: var(--color-surface);
-  backdrop-filter: blur(var(--blur));
   -webkit-backdrop-filter: blur(var(--blur));
+  backdrop-filter: blur(var(--blur));
+  background: var(--color-surface);
   border-radius: var(--radius-xl);
-  padding: 20px;
   box-shadow: var(--shadow-card);
+  padding: 20px;
 }
 
 .header-right {
-  display: flex;
   align-items: center;
+  display: flex;
   gap: 6px;
 }
 
 .help-button {
-  display: flex;
   align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  padding: 0;
+  background: var(--color-surface);
   border: none;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.06);
   color: var(--color-text-muted);
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  display: flex;
+  height: 28px;
+  justify-content: center;
+  padding: 0;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+  width: 28px;
 }
 
 .help-button:hover {
-  background: rgba(1, 175, 171, 0.15);
+  background: var(--color-primary-soft);
   color: var(--color-primary-light);
   transform: scale(1.1);
 }
 
 .form-header {
-  display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
+  display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  justify-content: space-between;
+  margin-bottom: 16px;
 }
 
 .form-header h2 {
+  color: var(--color-text);
   font-size: 1.05rem;
   font-weight: 600;
-  color: var(--color-text);
 }
 
 .mode-badge {
-  display: flex;
   align-items: center;
+  background: var(--color-surface);
+  border-radius: 100px;
+  color: var(--color-text-secondary);
+  display: flex;
+  font-size: 0.75rem;
+  font-weight: 500;
   gap: 6px;
   height: 28px;
   padding: 0 12px;
-  border-radius: 100px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--color-text-secondary);
 }
 
 .mode-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
   background: var(--color-text-muted);
+  border-radius: 50%;
+  height: 6px;
+  width: 6px;
 }
 
-/* Section dividers */
 .section-divider {
-  display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--color-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin-top: 4px;
   background: none;
   border: none;
-  padding: 0;
+  color: var(--color-text-muted);
   cursor: pointer;
-  transition: color 0.2s ease, transform 0.2s ease;
+  display: flex;
+  font-size: 0.75rem;
+  font-weight: 600;
+  gap: 10px;
+  justify-content: space-between;
+  letter-spacing: 0.06em;
+  margin-top: 4px;
+  padding: 0;
+  text-transform: uppercase;
+  transition:
+    color 0.2s ease,
+    transform 0.2s ease;
   width: 100%;
 }
 
@@ -501,24 +470,26 @@ function handleReset() {
 }
 
 .section-controls {
-  display: flex;
   align-items: center;
+  display: flex;
   gap: 8px;
 }
 
 .section-divider::before {
+  background: rgb(255, 255, 255, 0.05);
   content: '';
   flex: 1;
   height: 1px;
-  background: rgba(255, 255, 255, 0.05);
   order: -1;
 }
 
 .chevron {
-  flex-shrink: 0;
   color: var(--color-primary);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), scale 0.3s ease;
+  flex-shrink: 0;
   transform: rotate(0deg);
+  transition:
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    scale 0.3s ease;
 }
 
 .chevron.expanded {
@@ -526,36 +497,35 @@ function handleReset() {
 }
 
 .section-badge {
-  padding: 2px 8px;
   border-radius: 100px;
   font-size: 0.7rem;
   font-weight: 600;
+  padding: 2px 8px;
   white-space: nowrap;
 }
 
 .section-badge.body {
-  background: rgba(52, 199, 89, 0.15);
-  color: #6ee7a0;
+  background: var(--color-success-soft);
+  color: var(--color-success-light);
 }
 
 .section-badge.vci {
-  background: rgba(1, 175, 171, 0.15);
+  background: var(--color-primary-soft);
   color: var(--color-primary-light);
 }
 
 .section-hint {
+  color: var(--color-text-muted);
   font-size: 0.7rem;
   font-weight: 400;
-  color: var(--color-text-muted);
-  text-transform: none;
   letter-spacing: normal;
+  text-transform: none;
 }
 
-/* Two-column row for height/weight */
 .field-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
   gap: 8px;
+  grid-template-columns: 1fr 1fr;
 }
 
 .fields {
@@ -572,10 +542,10 @@ function handleReset() {
 }
 
 .field label {
+  color: var(--color-text);
   display: block;
   font-size: 0.8rem;
   font-weight: 500;
-  color: var(--color-text);
   margin-bottom: 4px;
 }
 
@@ -586,82 +556,16 @@ function handleReset() {
 
 .optional {
   color: var(--color-text-muted);
+  font-size: 0.8rem;
   font-weight: 400;
-  font-size: 0.8rem;
-}
-
-.input-wrapper {
-  position: relative;
-  background: rgba(255, 255, 255, 0.04);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-}
-
-.input-wrapper::before {
-  background: var(--color-primary);
-  border-radius: 2px;
-  bottom: 6px;
-  content: '';
-  left: 0;
-  position: absolute;
-  top: 6px;
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.2s ease;
-  width: 3px;
-  z-index: 1;
-}
-
-.input-wrapper:focus-within::before {
-  transform: scaleX(1);
-}
-
-input {
-  width: 100%;
-  padding: 12px 16px;
-  padding-left: 19px;
-  background: transparent;
-  border: none;
-  border-radius: var(--radius-md);
-  color: var(--color-text);
-  font-size: 0.95rem;
-  transition: all 0.2s var(--ease);
-  outline: none;
-}
-
-input:focus {
-  outline: none;
-}
-
-input::placeholder {
-  color: var(--color-text-muted);
-}
-
-.unit {
-  position: absolute;
-  right: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 0.8rem;
-  color: var(--color-text-muted);
-  pointer-events: none;
-}
-
-input {
-  padding-right: 48px;
-}
-
-select option {
-  background: #1a2a40;
-  color: var(--color-text);
 }
 
 .hint {
+  color: var(--color-text-muted);
   display: block;
   font-size: 0.75rem;
-  color: var(--color-text-muted);
-  margin-top: 4px;
   line-height: 1.4;
+  margin-top: 4px;
 }
 
 .actions {
@@ -675,25 +579,25 @@ select option {
 }
 
 .btn-primary {
-  flex: 1;
-  display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 12px 16px;
   background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
-  color: white;
   border: none;
   border-radius: var(--radius-md);
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  flex: 1;
   font-size: 0.9rem;
   font-weight: 600;
-  cursor: pointer;
+  gap: 6px;
+  justify-content: center;
+  padding: 12px 16px;
   transition: all 0.3s var(--ease);
 }
 
 .btn-primary:hover:not(:disabled) {
+  box-shadow: 0 4px 20px rgb(1, 175, 171, 0.35);
   transform: translateY(-1px);
-  box-shadow: 0 4px 20px rgba(1, 175, 171, 0.35);
 }
 
 .btn-primary:active:not(:disabled) {
@@ -701,19 +605,19 @@ select option {
 }
 
 .btn-primary:disabled {
-  opacity: 0.4;
   cursor: not-allowed;
+  opacity: 0.4;
 }
 
 .btn-secondary {
-  padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--color-text-secondary);
+  background: var(--color-surface);
   border: none;
   border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  cursor: pointer;
   font-size: 0.9rem;
   font-weight: 500;
-  cursor: pointer;
+  padding: 12px 16px;
   transition: all 0.2s var(--ease);
 }
 
@@ -724,20 +628,20 @@ select option {
 
 .collapse-enter-active,
 .collapse-leave-active {
-  transition: all 0.3s ease;
   max-height: 500px;
   overflow: hidden;
+  transition: all 0.3s ease;
 }
 
 .collapse-enter-from,
 .collapse-leave-to {
-  opacity: 0;
-  max-height: 0;
-  margin-top: 0;
   margin-bottom: 0;
+  margin-top: 0;
+  max-height: 0;
+  opacity: 0;
 }
 
-@media (max-width: 560px) {
+@media (width <= 560px) {
   .field-row {
     grid-template-columns: 1fr;
   }
