@@ -40,7 +40,15 @@ const emit = defineEmits<{
           </svg>
         </div>
         <div class="logo-text">
-          <h1>Livery<span class="dot">.</span>one</h1>
+          <h1>
+            <span class="word">Livery</span>
+            <span class="dot">.</span>
+            <span class="suffix">
+              <span v-for="(letter, i) in 'one'" :key="i" class="char">
+                <span>{{ letter }}</span>
+              </span>
+            </span>
+          </h1>
           <p class="tagline">Liver Weight Prediction</p>
         </div>
       </div>
@@ -112,6 +120,7 @@ $mobileBreakpoint: 480px;
   display: flex;
   align-items: center;
   gap: 10px;
+  cursor: default; // No text/pointer cursor on hover.
 }
 
 .logo-icon {
@@ -139,7 +148,53 @@ $mobileBreakpoint: 480px;
 }
 
 .dot {
+  display: inline-block;
   color: var(--color-primary);
+  animation: dot-pop 0.4s var(--ease-bounce) both; // Scales up from zero on first appearance.
+}
+
+.char {
+  display: inline-block;
+  animation: char-in 0.35s ease both; // Slides in from the right, one by one (staggered below).
+
+  &:nth-child(1) {
+    animation-delay: 0.4s; // Starts after the dot settles.
+  }
+
+  &:nth-child(2) {
+    animation-delay: 0.5s;
+  }
+
+  &:nth-child(3) {
+    animation-delay: 0.6s;
+  }
+
+  & > span {
+    display: inline-block;
+  }
+}
+
+@media (hover: hover) {
+  // Sequential ripple: e/n/o push out (3/2/1 ticks), then settle back o/n/e. Dot is untouched.
+  .logo:hover .char:nth-child(1) > span {
+    animation: stretch-o 0.8s ease;
+  }
+
+  .logo:hover .char:nth-child(2) > span {
+    animation: stretch-n 0.8s ease;
+  }
+
+  .logo:hover .char:nth-child(3) > span {
+    animation: stretch-e 0.8s ease;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dot,
+  .char,
+  .char > span {
+    animation: none;
+  }
 }
 
 .tagline {
@@ -235,6 +290,76 @@ $mobileBreakpoint: 480px;
     width: $rightWidth;
     left: calc($leftWidth + $modelSwitchPadding - 50%);
     transform: translateX(100%);
+  }
+}
+
+@keyframes dot-pop {
+  from {
+    transform: scale(0);
+  }
+
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes char-in {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes stretch-e {
+  0% {
+    transform: translateX(0);
+  }
+
+  20%,
+  75% {
+    transform: translateX(9px);
+  }
+
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes stretch-n {
+  0%,
+  15% {
+    transform: translateX(0);
+  }
+
+  35%,
+  65% {
+    transform: translateX(6px);
+  }
+
+  85%,
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes stretch-o {
+  0%,
+  30% {
+    transform: translateX(0);
+  }
+
+  50% {
+    transform: translateX(3px);
+  }
+
+  65%,
+  100% {
+    transform: translateX(0);
   }
 }
 </style>
