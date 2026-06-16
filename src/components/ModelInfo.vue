@@ -63,7 +63,7 @@ import { MODEL_INFO } from '@/constants/models';
 }
 
 .model-card {
-  background: rgb(255, 255, 255, 0.03);
+  background: var(--color-surface-subtle);
   border-radius: var(--radius-md);
   display: flex;
   flex-direction: column;
@@ -149,7 +149,7 @@ import { MODEL_INFO } from '@/constants/models';
 }
 
 .metric-pill {
-  background: rgb(255, 255, 255, 0.05);
+  background: var(--color-surface-subtle);
   border-radius: 100px;
   color: var(--color-text-secondary);
   font-size: 0.7rem;

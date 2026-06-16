@@ -219,7 +219,7 @@ const hasUnusedFeatures = computed(() => unusedFeatures.value.length > 0);
 }
 
 .model-tag.linear {
-  background: rgb(88, 86, 214, 0.15);
+  background: var(--color-accent-soft);
   color: var(--color-accent-light);
 }
 
@@ -278,7 +278,7 @@ const hasUnusedFeatures = computed(() => unusedFeatures.value.length > 0);
 }
 
 .metric {
-  background: rgb(255, 255, 255, 0.03);
+  background: var(--color-surface-subtle);
   border-radius: var(--radius-sm);
   cursor: help;
   display: flex;
@@ -319,7 +319,7 @@ const hasUnusedFeatures = computed(() => unusedFeatures.value.length > 0);
 }
 
 .features-section {
-  border-top: 1px solid rgb(255, 255, 255, 0.08);
+  border-top: 1px solid var(--color-border-subtle);
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -335,7 +335,7 @@ const hasUnusedFeatures = computed(() => unusedFeatures.value.length > 0);
 }
 
 .warning-icon {
-  color: #ffc107;
+  color: var(--color-warning);
   cursor: help;
   flex-shrink: 0;
   opacity: 0.8;
@@ -382,8 +382,8 @@ const hasUnusedFeatures = computed(() => unusedFeatures.value.length > 0);
 }
 
 .feature-tag.unused {
-  background: rgb(255, 193, 7, 0.15);
-  color: #ffc107;
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
   cursor: help;
 }
 

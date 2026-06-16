@@ -143,7 +143,7 @@ onBeforeUnmount(() => {
 }
 
 .backdrop {
-  background: rgb(0, 0, 0, 0.4);
+  background: var(--color-scrim);
   inset: 0;
   pointer-events: auto;
   position: fixed;
@@ -153,7 +153,7 @@ onBeforeUnmount(() => {
 .sheet {
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
-  background: linear-gradient(180deg, rgb(10, 22, 40, 0.98) 0%, rgb(10, 22, 40, 0.99) 100%);
+  background: var(--color-elevated);
   border-radius: 16px 16px 0 0;
   bottom: 0;
   box-shadow: 0 -8px 24px rgb(0, 0, 0, 0.4);
@@ -175,7 +175,7 @@ onBeforeUnmount(() => {
 
 .handle {
   align-items: center;
-  background: rgb(255, 255, 255, 0.02);
+  background: var(--color-surface-subtle);
   cursor: grab;
   display: flex;
   flex-shrink: 0;
@@ -185,7 +185,7 @@ onBeforeUnmount(() => {
 }
 
 .grabber {
-  background: rgb(255, 255, 255, 0.3);
+  background: var(--color-text-muted);
   border-radius: 2px;
   height: 4px;
   width: 40px;

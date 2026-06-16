@@ -8,6 +8,16 @@
     <meta name="description" content="Predict liver weight from preoperative measurements using machine learning" />
     <link rel="manifest" href="/manifest.json" />
     <title>Livery.one — Liver Weight Prediction</title>
+    <script>
+      // Set the theme before paint so there is no flash of the wrong mode.
+      (function () {
+        var t = localStorage.getItem('livery-theme');
+        if (t !== 'dark' && t !== 'light') {
+          t = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+        }
+        document.documentElement.setAttribute('data-theme', t);
+      })();
+    </script>
   </head>
   <body>
     <div id="app"></div>

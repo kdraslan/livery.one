@@ -42,7 +42,7 @@ function select(value: string) {
 }
 
 .option {
-  background: rgb(255, 255, 255, 0.04);
+  background: var(--color-surface-subtle);
   border: none;
   border-radius: var(--radius-sm);
   color: var(--color-text-muted);
@@ -55,7 +55,7 @@ function select(value: string) {
 }
 
 .option:hover {
-  background: rgb(255, 255, 255, 0.08);
+  background: var(--color-surface-hover);
   color: var(--color-text-secondary);
 }
 

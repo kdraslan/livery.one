@@ -25,7 +25,7 @@
 
 <style scoped>
 .footer {
-  background: linear-gradient(180deg, rgb(10, 22, 40, 0.92) 0%, rgb(10, 22, 40, 0.97) 100%);
+  background: var(--color-chrome);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -37,9 +37,9 @@
 
 .disclaimer {
   align-items: flex-start;
-  background: rgb(255, 204, 0, 0.06);
+  background: var(--color-warning-soft);
   border-radius: var(--radius-md);
-  color: rgb(255, 204, 0, 0.8);
+  color: var(--color-warning);
   display: flex;
   font-size: 0.8rem;
   gap: 8px;

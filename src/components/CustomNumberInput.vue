@@ -41,7 +41,7 @@ function handleInput(e: Event) {
 <style scoped>
 .input-group {
   align-items: center;
-  background: rgb(255, 255, 255, 0.04);
+  background: var(--color-surface-subtle);
   border-radius: var(--radius-sm);
   display: flex;
   overflow: hidden;

@@ -373,7 +373,7 @@ function handleReset() {
 .form-card {
   -webkit-backdrop-filter: blur(var(--blur));
   backdrop-filter: blur(var(--blur));
-  background: var(--color-surface);
+  background: var(--color-card);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-card);
   padding: 20px;
@@ -481,7 +481,7 @@ function handleReset() {
 }
 
 .section-divider::before {
-  background: rgb(255, 255, 255, 0.05);
+  background: var(--color-border-subtle);
   content: '';
   flex: 1;
   height: 1px;

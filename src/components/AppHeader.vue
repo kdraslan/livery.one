@@ -2,6 +2,7 @@
 import type { EnhancedModelType } from '@/types';
 
 import Tooltip from '@/components/Tooltip.vue';
+import { useTheme } from '@/composables/useTheme';
 
 defineProps<{
   modelValue?: EnhancedModelType;
@@ -11,6 +12,8 @@ defineProps<{
 const emit = defineEmits<{
   'update:modelValue': [value: EnhancedModelType];
 }>();
+
+const { theme, toggle } = useTheme();
 </script>
 
 <template>
@@ -33,8 +36,8 @@ const emit = defineEmits<{
             </text>
             <defs>
               <linearGradient id="logoGrad" x1="0" y1="0" x2="32" y2="32">
-                <stop stop-color="#02d4cf" />
-                <stop offset="1" stop-color="#007a8a" />
+                <stop class="grad-from" stop-color="#02d4cf" />
+                <stop class="grad-to" offset="1" stop-color="#007a8a" />
               </linearGradient>
             </defs>
           </svg>
@@ -52,6 +55,44 @@ const emit = defineEmits<{
           <p class="tagline">Liver Weight Prediction</p>
         </div>
       </div>
+      <Tooltip
+        :text="theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+        position="bottom"
+      >
+        <button
+          type="button"
+          class="theme-toggle"
+          :aria-label="theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+          @click="toggle"
+        >
+          <svg
+            v-if="theme === 'dark'"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            width="18"
+            height="18"
+          >
+            <circle cx="12" cy="12" r="5" />
+            <path d="M12 1.5v2M12 20.5v2M1.5 12h2M20.5 12h2" />
+          </svg>
+          <svg
+            v-else
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            width="18"
+            height="18"
+          >
+            <path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z" />
+          </svg>
+        </button>
+      </Tooltip>
       <div v-if="modelValue && isVciMode" class="model-section">
         <span class="model-label">Model:</span>
         <div class="model-switch">
@@ -101,13 +142,12 @@ $mobileBreakpoint: 480px;
   top: 0;
   z-index: 100;
   width: 100%;
-  background: var(--color-bg); /* Opaque so content scrolling under it never ghosts through. */
+  background: var(--color-chrome); /* Opaque so content scrolling under it never ghosts through. */
 }
 
 .bar-inner {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   flex-wrap: wrap;
   gap: 12px;
   max-width: 720px;
@@ -120,7 +160,32 @@ $mobileBreakpoint: 480px;
   display: flex;
   align-items: center;
   gap: 10px;
+  margin-right: auto; // Pushes the toggle and model switch to the right.
   cursor: default; // No text/pointer cursor on hover.
+}
+
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+@media (hover: hover) {
+  .theme-toggle:hover {
+    background: var(--color-surface-hover);
+    color: var(--color-text);
+  }
 }
 
 .logo-icon {
@@ -131,6 +196,14 @@ $mobileBreakpoint: 480px;
 .logo-icon svg {
   width: 32px;
   height: 32px;
+}
+
+[data-theme='light'] .grad-from {
+  stop-color: #018f8b; // Darker logo badge on light mode.
+}
+
+[data-theme='light'] .grad-to {
+  stop-color: #00565f;
 }
 
 .logo-text {
@@ -145,6 +218,10 @@ $mobileBreakpoint: 480px;
   letter-spacing: -0.02em;
   line-height: 1;
   color: var(--color-text);
+}
+
+[data-theme='light'] .suffix {
+  color: #9ca7b4; // Light gray "one" on light mode.
 }
 
 .dot {
@@ -208,7 +285,7 @@ $mobileBreakpoint: 480px;
 
 .description-wrap {
   width: 100%;
-  background: var(--color-bg); /* Matches the bar; scrolls up under it in sync with scroll. */
+  background: var(--color-chrome); /* Matches the bar; scrolls up under it in sync with scroll. */
 }
 
 .description {
@@ -228,7 +305,7 @@ $mobileBreakpoint: 480px;
 
   @media (max-width: $mobileBreakpoint) {
     margin: auto;
-    border-top: 1px solid rgb(255, 255, 255, 0.1);
+    border-top: 1px solid var(--color-border);
     padding-top: 8px;
     width: 100%;
     justify-content: center;
@@ -248,7 +325,7 @@ $mobileBreakpoint: 480px;
 .model-switch {
   position: relative;
   display: flex;
-  background: rgb(255, 255, 255, 0.08);
+  background: var(--color-surface-hover);
   border-radius: 20px;
   padding: $modelSwitchPadding;
 }

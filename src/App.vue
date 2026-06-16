@@ -67,6 +67,13 @@ function handleVciModeChange(vci: boolean) {
   z-index: -1;
 }
 
+[data-theme='light'] .app-bg {
+  background:
+    radial-gradient(ellipse at 20% 50%, rgb(1, 175, 171, 0.1) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgb(88, 86, 214, 0.08) 0%, transparent 50%),
+    linear-gradient(160deg, #eef2f8 0%, #e3eaf3 50%, #eef2f8 100%);
+}
+
 .main {
   display: flex;
   flex: 1;
