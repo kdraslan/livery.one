@@ -252,17 +252,28 @@ $mobileBreakpoint: 480px;
 }
 
 @media (hover: hover) {
-  // Sequential ripple: e/n/o push out (3/2/1 ticks), then settle back o/n/e. Dot is untouched.
+  // Letters stretch out sequentially (e, then n, then o), then all return to place at once. Dot is untouched.
+  .logo:hover .char > span {
+    animation-name: stretch;
+    animation-timing-function: ease;
+  }
+
   .logo:hover .char:nth-child(1) > span {
-    animation: stretch-o 0.8s ease;
+    --shift: 1; // o moves least and starts last.
+    animation-delay: 0.24s;
+    animation-duration: 0.52s;
   }
 
   .logo:hover .char:nth-child(2) > span {
-    animation: stretch-n 0.8s ease;
+    --shift: 2;
+    animation-delay: 0.12s;
+    animation-duration: 0.64s;
   }
 
   .logo:hover .char:nth-child(3) > span {
-    animation: stretch-e 0.8s ease;
+    --shift: 3; // e moves most and leads, so they fan out without overlapping.
+    animation-delay: 0s;
+    animation-duration: 0.76s;
   }
 }
 
@@ -392,49 +403,16 @@ $mobileBreakpoint: 480px;
   }
 }
 
-@keyframes stretch-e {
+@keyframes stretch {
   0% {
     transform: translateX(0);
   }
 
-  20%,
-  75% {
-    transform: translateX(9px);
-  }
-
-  100% {
-    transform: translateX(0);
-  }
-}
-
-@keyframes stretch-n {
-  0%,
-  15% {
-    transform: translateX(0);
-  }
-
-  35%,
   65% {
-    transform: translateX(6px);
+    animation-timing-function: cubic-bezier(0.7, 0, 0.2, 1); // Snappier return than the spread.
+    transform: translateX(calc(var(--shift) * 0.2em));
   }
 
-  85%,
-  100% {
-    transform: translateX(0);
-  }
-}
-
-@keyframes stretch-o {
-  0%,
-  30% {
-    transform: translateX(0);
-  }
-
-  50% {
-    transform: translateX(3px);
-  }
-
-  65%,
   100% {
     transform: translateX(0);
   }
