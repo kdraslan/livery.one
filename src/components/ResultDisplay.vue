@@ -155,7 +155,7 @@ const hasUnusedFeatures = computed(() => unusedFeatures.value.length > 0);
   </Transition>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .result-card {
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
@@ -166,24 +166,24 @@ const hasUnusedFeatures = computed(() => unusedFeatures.value.length > 0);
   overflow: hidden;
   padding: 24px 20px;
   position: relative;
-}
 
-.result-card::before {
-  background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
-  content: '';
-  height: 0;
-  left: 0;
-  position: absolute;
-  right: 0;
-  top: 0;
-}
+  &::before {
+    background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
+    content: '';
+    height: 0;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+  }
 
-.result-card.mlp::before {
-  background: linear-gradient(90deg, var(--color-primary), var(--color-primary-light));
-}
+  &.mlp::before {
+    background: linear-gradient(90deg, var(--color-primary), var(--color-primary-light));
+  }
 
-.result-card.ridge::before {
-  background: linear-gradient(90deg, var(--color-success), var(--color-success-light));
+  &.ridge::before {
+    background: linear-gradient(90deg, var(--color-success), var(--color-success-light));
+  }
 }
 
 .result-header {
@@ -192,6 +192,13 @@ const hasUnusedFeatures = computed(() => unusedFeatures.value.length > 0);
   gap: 12px;
   justify-content: space-between;
   margin-bottom: 20px;
+
+  h3 {
+    color: var(--color-text-secondary);
+    font-size: 1rem;
+    font-weight: 500;
+    white-space: nowrap;
+  }
 }
 
 .header-content {
@@ -202,13 +209,6 @@ const hasUnusedFeatures = computed(() => unusedFeatures.value.length > 0);
   gap: 12px;
 }
 
-.result-header h3 {
-  color: var(--color-text-secondary);
-  font-size: 1rem;
-  font-weight: 500;
-  white-space: nowrap;
-}
-
 .model-tag {
   border-radius: 100px;
   font-size: 0.7rem;
@@ -216,21 +216,21 @@ const hasUnusedFeatures = computed(() => unusedFeatures.value.length > 0);
   letter-spacing: 0.05em;
   padding: 3px 10px;
   text-transform: uppercase;
-}
 
-.model-tag.linear {
-  background: var(--color-accent-soft);
-  color: var(--color-accent-light);
-}
+  &.linear {
+    background: var(--color-accent-soft);
+    color: var(--color-accent-light);
+  }
 
-.model-tag.mlp {
-  background: var(--color-primary-soft);
-  color: var(--color-primary-light);
-}
+  &.mlp {
+    background: var(--color-primary-soft);
+    color: var(--color-primary-light);
+  }
 
-.model-tag.ridge {
-  background: var(--color-success-soft);
-  color: var(--color-success-light);
+  &.ridge {
+    background: var(--color-success-soft);
+    color: var(--color-success-light);
+  }
 }
 
 .result-value {
@@ -238,6 +238,13 @@ const hasUnusedFeatures = computed(() => unusedFeatures.value.length > 0);
   display: flex;
   gap: 12px;
   margin-bottom: 24px;
+
+  .unit {
+    align-items: center;
+    color: var(--color-text-muted);
+    display: flex;
+    gap: 4px;
+  }
 }
 
 .info-icon {
@@ -247,10 +254,12 @@ const hasUnusedFeatures = computed(() => unusedFeatures.value.length > 0);
   margin-top: 8px;
   opacity: 0.8;
   transition: opacity 0.2s;
-}
 
-.info-icon:hover {
-  opacity: 1;
+  @media (hover: hover) {
+    &:hover {
+      opacity: 1;
+    }
+  }
 }
 
 .weight {
@@ -262,19 +271,20 @@ const hasUnusedFeatures = computed(() => unusedFeatures.value.length > 0);
   letter-spacing: -0.03em;
   line-height: 1;
   -webkit-text-fill-color: transparent;
-}
 
-.result-value .unit {
-  align-items: center;
-  color: var(--color-text-muted);
-  display: flex;
-  gap: 4px;
+  @media (width <= 480px) {
+    font-size: 2.4rem;
+  }
 }
 
 .metrics {
   display: grid;
   gap: 16px;
   grid-template-columns: repeat(3, 1fr);
+
+  @media (width <= 480px) {
+    grid-template-columns: 1fr;
+  }
 }
 
 .metric {
@@ -339,10 +349,12 @@ const hasUnusedFeatures = computed(() => unusedFeatures.value.length > 0);
   cursor: help;
   flex-shrink: 0;
   opacity: 0.8;
-}
 
-.warning-icon:hover {
-  opacity: 1;
+  @media (hover: hover) {
+    &:hover {
+      opacity: 1;
+    }
+  }
 }
 
 .help-icon {
@@ -351,10 +363,12 @@ const hasUnusedFeatures = computed(() => unusedFeatures.value.length > 0);
   flex-shrink: 0;
   opacity: 0.7;
   transition: opacity 0.2s;
-}
 
-.help-icon:hover {
-  opacity: 1;
+  @media (hover: hover) {
+    &:hover {
+      opacity: 1;
+    }
+  }
 }
 
 .features-label {
@@ -379,21 +393,11 @@ const hasUnusedFeatures = computed(() => unusedFeatures.value.length > 0);
   font-size: 0.75rem;
   font-weight: 500;
   padding: 4px 10px;
-}
 
-.feature-tag.unused {
-  background: var(--color-warning-soft);
-  color: var(--color-warning);
-  cursor: help;
-}
-
-@media (width <= 480px) {
-  .metrics {
-    grid-template-columns: 1fr;
-  }
-
-  .weight {
-    font-size: 2.4rem;
+  &.unused {
+    background: var(--color-warning-soft);
+    color: var(--color-warning);
+    cursor: help;
   }
 }
 </style>

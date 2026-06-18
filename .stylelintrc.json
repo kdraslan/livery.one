@@ -13,6 +13,7 @@
     "property-no-vendor-prefix": null,
     "value-no-vendor-prefix": null,
     "keyframes-name-pattern": null,
-    "media-feature-range-notation": null
+    "media-feature-range-notation": null,
+    "declaration-property-value-no-unknown": null
   }
 }

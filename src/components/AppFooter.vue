@@ -23,15 +23,13 @@
   </footer>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .footer {
   background: var(--color-chrome);
   display: flex;
   flex-direction: column;
   gap: 8px;
-  left: 0;
   padding: 12px 20px;
-  right: 0;
   width: 100%;
 }
 
@@ -47,19 +45,19 @@
   margin: 0 auto;
   padding: 12px;
   width: auto;
-}
 
-.disclaimer .icon {
-  flex-shrink: 0;
-  margin-top: 1px;
-  opacity: 0.7;
+  .icon {
+    flex-shrink: 0;
+    margin-top: 1px;
+    opacity: 0.7;
+  }
 }
 
 .credits {
   align-items: center;
   color: var(--color-text-muted);
   display: flex;
-  flex-wrap: nowrap; /* Stay one line until the breakpoint switches to stacked. */
+  flex-wrap: nowrap; // Stay one line until the breakpoint switches to stacked.
   font-size: 0.8rem;
   gap: 8px;
   justify-content: center;
@@ -67,6 +65,10 @@
   max-width: 720px;
   padding: 0 20px;
   width: 100%;
+
+  @media (max-width: 600px) {
+    flex-wrap: wrap;
+  }
 }
 
 .separator {
@@ -74,10 +76,6 @@
 }
 
 @media (max-width: 600px) {
-  .credits {
-    flex-wrap: wrap;
-  }
-
   .separator-supervised {
     display: none;
   }

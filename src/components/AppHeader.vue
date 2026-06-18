@@ -135,89 +135,90 @@ $modelSwitchPadding: 3px;
 $sliderPadding: 5px;
 $leftWidth: 58px;
 $rightWidth: 86px;
-$mobileBreakpoint: 480px;
 
 .bar {
+  background: var(--color-chrome); // Opaque so content scrolling under it never ghosts through.
   position: sticky;
   top: 0;
-  z-index: 100;
   width: 100%;
-  background: var(--color-chrome); /* Opaque so content scrolling under it never ghosts through. */
+  z-index: 100;
 }
 
 .bar-inner {
-  display: flex;
   align-items: center;
+  display: flex;
   flex-wrap: wrap;
   gap: 12px;
-  max-width: 720px;
-  width: 100%;
   margin: 0 auto;
+  max-width: 720px;
   padding: 12px 20px;
+  width: 100%;
 }
 
 .logo {
-  display: flex;
   align-items: center;
+  cursor: default; // No text/pointer cursor on hover.
+  display: flex;
   gap: 10px;
   margin-right: auto; // Pushes the toggle and model switch to the right.
-  cursor: default; // No text/pointer cursor on hover.
 }
 
 .theme-toggle {
-  display: flex;
   align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  padding: 0;
+  background: var(--color-surface);
   border: none;
   border-radius: 50%;
-  background: var(--color-surface);
   color: var(--color-text-secondary);
   cursor: pointer;
+  display: flex;
+  height: 32px;
+  justify-content: center;
+  padding: 0;
   transition:
     background 0.2s ease,
     color 0.2s ease;
-}
+  width: 32px;
 
-@media (hover: hover) {
-  .theme-toggle:hover {
-    background: var(--color-surface-hover);
-    color: var(--color-text);
+  @media (hover: hover) {
+    &:hover {
+      background: var(--color-surface-hover);
+      color: var(--color-text);
+    }
   }
 }
 
 .logo-icon {
   display: flex;
   flex-shrink: 0;
+
+  svg {
+    height: 32px;
+    width: 32px;
+  }
 }
 
-.logo-icon svg {
-  width: 32px;
-  height: 32px;
-}
+[data-theme='light'] {
+  .grad-from {
+    stop-color: #018f8b; // Darker logo badge on light mode.
+  }
 
-[data-theme='light'] .grad-from {
-  stop-color: #018f8b; // Darker logo badge on light mode.
-}
-
-[data-theme='light'] .grad-to {
-  stop-color: #00565f;
+  .grad-to {
+    stop-color: #00565f;
+  }
 }
 
 .logo-text {
   display: flex;
   flex-direction: column;
   gap: 5px;
-}
 
-.logo-text h1 {
-  font-size: 1.25rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1;
-  color: var(--color-text);
+  h1 {
+    color: var(--color-text);
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
 }
 
 [data-theme='light'] .suffix {
@@ -225,14 +226,14 @@ $mobileBreakpoint: 480px;
 }
 
 .dot {
-  display: inline-block;
-  color: var(--color-primary);
   animation: dot-pop 0.4s var(--ease-bounce) both; // Scales up from zero on first appearance.
+  color: var(--color-primary);
+  display: inline-block;
 }
 
 .char {
-  display: inline-block;
   animation: char-in 0.35s ease both; // Slides in from the right, one by one (staggered below).
+  display: inline-block;
 
   &:nth-child(1) {
     animation-delay: 0.4s; // Starts after the dot settles.
@@ -252,9 +253,8 @@ $mobileBreakpoint: 480px;
 }
 
 @media (hover: hover) {
-  // Letters stretch out sequentially (e, then n, then o), then all return to place at once. Dot is untouched.
   .logo:hover .char > span {
-    animation-name: stretch;
+    animation-name: stretch; // Letters fan out in sequence (e, n, o) then return together; dot stays put.
     animation-timing-function: ease;
   }
 
@@ -286,8 +286,8 @@ $mobileBreakpoint: 480px;
 }
 
 .tagline {
-  font-size: 0.7rem;
   color: var(--color-text-secondary);
+  font-size: 0.7rem;
   font-weight: 400;
   letter-spacing: 0.04em;
   line-height: 1;
@@ -295,79 +295,79 @@ $mobileBreakpoint: 480px;
 }
 
 .description-wrap {
+  background: var(--color-chrome); // Matches the bar; scrolls up under it in sync with scroll.
   width: 100%;
-  background: var(--color-chrome); /* Matches the bar; scrolls up under it in sync with scroll. */
 }
 
 .description {
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 0 20px 12px;
-  font-size: 0.85rem;
   color: var(--color-text-secondary);
+  font-size: 0.85rem;
   line-height: 1.4;
+  margin: 0 auto;
+  max-width: 720px;
   opacity: 0.85;
+  padding: 0 20px 12px;
 }
 
 .model-section {
-  display: flex;
   align-items: center;
+  display: flex;
   gap: 8px;
 
-  @media (max-width: $mobileBreakpoint) {
-    margin: auto;
+  @media (max-width: 480px) {
     border-top: 1px solid var(--color-border);
+    justify-content: center;
+    margin: auto;
     padding-top: 8px;
     width: 100%;
-    justify-content: center;
   }
 }
 
 .model-label {
+  color: var(--color-text-secondary);
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--color-text-secondary);
 
-  @media (max-width: $mobileBreakpoint) {
+  @media (max-width: 480px) {
     display: none;
   }
 }
 
 .model-switch {
-  position: relative;
-  display: flex;
   background: var(--color-surface-hover);
   border-radius: 20px;
+  display: flex;
   padding: $modelSwitchPadding;
+  position: relative;
 }
 
 .switch-option {
-  position: relative;
-  z-index: 1;
-  padding: 6px 14px;
-  border: none;
   background: transparent;
+  border: none;
   color: var(--color-text-muted);
+  cursor: pointer;
   font-size: 0.75rem;
   font-weight: 600;
-  cursor: pointer;
-  transition: color 0.3s var(--ease);
+  padding: 6px 14px;
+  position: relative;
   text-align: center;
+  transition: color 0.3s var(--ease);
   white-space: nowrap;
-}
+  z-index: 1;
 
-.switch-option.active {
-  color: #fff;
+  &.active {
+    color: #fff;
+  }
 }
 
 .switch-slider {
-  position: absolute;
-  top: $sliderPadding;
-  height: calc(100% - $sliderPadding * 2);
   background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
   border-radius: 16px;
-  transition: all 0.3s var(--ease);
   box-shadow: 0 2px 8px rgb(1, 175, 171, 0.3);
+  height: calc(100% - $sliderPadding * 2);
+  position: absolute;
+  top: $sliderPadding;
+  transition: all 0.3s var(--ease);
   width: $leftWidth;
 
   &:not(.right) {
@@ -375,9 +375,9 @@ $mobileBreakpoint: 480px;
   }
 
   &.right {
-    width: $rightWidth;
     left: calc($leftWidth + $modelSwitchPadding - 50%);
     transform: translateX(100%);
+    width: $rightWidth;
   }
 }
 

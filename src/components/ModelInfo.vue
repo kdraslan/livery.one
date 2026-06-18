@@ -35,7 +35,7 @@ import { MODEL_INFO } from '@/constants/models';
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .model-info {
   display: flex;
   flex-direction: column;
@@ -71,29 +71,29 @@ import { MODEL_INFO } from '@/constants/models';
   padding: 14px;
   padding-left: 18px;
   position: relative;
-}
 
-.model-card::before {
-  background: var(--color-text-muted);
-  border-radius: 2px;
-  bottom: 12px;
-  content: '';
-  left: -12px;
-  position: absolute;
-  top: 12px;
-  width: 4px;
-}
+  &::before {
+    background: var(--color-text-muted);
+    border-radius: 2px;
+    bottom: 12px;
+    content: '';
+    left: -12px;
+    position: absolute;
+    top: 12px;
+    width: 4px;
+  }
 
-.model-card.linear::before {
-  background: var(--color-accent-light);
-}
+  &.linear::before {
+    background: var(--color-accent-light);
+  }
 
-.model-card.mlp::before {
-  background: var(--color-primary-light);
-}
+  &.mlp::before {
+    background: var(--color-primary-light);
+  }
 
-.model-card.ridge::before {
-  background: var(--color-success-light);
+  &.ridge::before {
+    background: var(--color-success-light);
+  }
 }
 
 .model-card-header {

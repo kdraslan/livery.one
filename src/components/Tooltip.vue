@@ -182,7 +182,7 @@ watch(isVisible, async (visible) => {
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .tooltip-trigger {
   display: inline-block;
   position: relative;
@@ -190,9 +190,9 @@ watch(isVisible, async (visible) => {
 
 .tooltip {
   animation: fadeIn 0.2s ease forwards;
-  background: rgb(0, 0, 0, 0.9);
+  background: var(--color-tooltip);
   border-radius: 6px;
-  color: white;
+  color: #fff;
   font-size: 12px;
   line-height: 1.4;
   max-width: 200px;
@@ -201,51 +201,51 @@ watch(isVisible, async (visible) => {
   position: fixed;
   white-space: normal;
   z-index: 10000;
-}
 
-.tooltip::before {
-  background: rgb(0, 0, 0, 0.9);
-  content: '';
-  height: 6px;
-  position: absolute;
-  transform: rotate(45deg);
-  width: 6px;
-}
+  &::before {
+    background: var(--color-tooltip);
+    content: '';
+    height: 6px;
+    position: absolute;
+    transform: rotate(45deg);
+    width: 6px;
+  }
 
-.tooltip[data-placement='top']::before,
-.tooltip[data-placement='topLeft']::before,
-.tooltip[data-placement='topRight']::before {
-  bottom: -3px;
-}
+  &[data-placement='top']::before,
+  &[data-placement='topLeft']::before,
+  &[data-placement='topRight']::before {
+    bottom: -3px;
+  }
 
-.tooltip[data-placement='bottom']::before,
-.tooltip[data-placement='bottomLeft']::before,
-.tooltip[data-placement='bottomRight']::before {
-  top: -3px;
-}
+  &[data-placement='bottom']::before,
+  &[data-placement='bottomLeft']::before,
+  &[data-placement='bottomRight']::before {
+    top: -3px;
+  }
 
-.tooltip[data-placement='left']::before {
-  right: -3px;
-}
+  &[data-placement='left']::before {
+    right: -3px;
+  }
 
-.tooltip[data-placement='right']::before {
-  left: -3px;
-}
+  &[data-placement='right']::before {
+    left: -3px;
+  }
 
-.tooltip[data-placement='top']::before,
-.tooltip[data-placement='topLeft']::before,
-.tooltip[data-placement='topRight']::before,
-.tooltip[data-placement='bottom']::before,
-.tooltip[data-placement='bottomLeft']::before,
-.tooltip[data-placement='bottomRight']::before {
-  left: var(--tip-offset);
-  margin-left: -3px;
-}
+  &[data-placement='top']::before,
+  &[data-placement='topLeft']::before,
+  &[data-placement='topRight']::before,
+  &[data-placement='bottom']::before,
+  &[data-placement='bottomLeft']::before,
+  &[data-placement='bottomRight']::before {
+    left: var(--tip-offset);
+    margin-left: -3px;
+  }
 
-.tooltip[data-placement='left']::before,
-.tooltip[data-placement='right']::before {
-  margin-top: -3px;
-  top: var(--tip-offset);
+  &[data-placement='left']::before,
+  &[data-placement='right']::before {
+    margin-top: -3px;
+    top: var(--tip-offset);
+  }
 }
 
 @keyframes fadeIn {

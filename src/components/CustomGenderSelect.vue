@@ -35,7 +35,7 @@ function select(value: string) {
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .gender-select {
   display: flex;
   gap: 8px;
@@ -52,15 +52,17 @@ function select(value: string) {
   font-weight: 500;
   padding: 10px 16px;
   transition: all 0.2s ease;
-}
 
-.option:hover {
-  background: var(--color-surface-hover);
-  color: var(--color-text-secondary);
-}
+  &.active {
+    background: var(--color-primary-soft);
+    color: var(--color-primary-light);
+  }
 
-.option.active {
-  background: var(--color-primary-soft);
-  color: var(--color-primary-light);
+  @media (hover: hover) {
+    &:hover {
+      background: var(--color-surface-hover);
+      color: var(--color-text-secondary);
+    }
+  }
 }
 </style>

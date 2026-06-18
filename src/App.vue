@@ -48,7 +48,7 @@ function handleVciModeChange(vci: boolean) {
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .app {
   display: flex;
   flex-direction: column;
@@ -63,15 +63,15 @@ function handleVciModeChange(vci: boolean) {
     linear-gradient(160deg, #0a1628 0%, #0f2035 50%, #0a1628 100%);
   inset: 0;
   position: fixed;
-  transform: translateZ(0); /* Own layer; avoids iOS fixed-bg scroll repaint. */
+  transform: translateZ(0); // Own layer; avoids iOS fixed-bg scroll repaint.
   z-index: -1;
-}
 
-[data-theme='light'] .app-bg {
-  background:
-    radial-gradient(ellipse at 20% 50%, rgb(1, 175, 171, 0.1) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 20%, rgb(88, 86, 214, 0.08) 0%, transparent 50%),
-    linear-gradient(160deg, #eef2f8 0%, #e3eaf3 50%, #eef2f8 100%);
+  [data-theme='light'] & {
+    background:
+      radial-gradient(ellipse at 20% 50%, rgb(1, 175, 171, 0.1) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, rgb(88, 86, 214, 0.08) 0%, transparent 50%),
+      linear-gradient(160deg, #eef2f8 0%, #e3eaf3 50%, #eef2f8 100%);
+  }
 }
 
 .main {

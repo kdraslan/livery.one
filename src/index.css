@@ -45,6 +45,7 @@
   --color-text-secondary: rgb(255, 255, 255, 0.55);
   --color-text-muted: rgb(255, 255, 255, 0.35);
   --color-scrim: rgb(0, 0, 0, 0.4);
+  --color-tooltip: rgb(0, 0, 0, 0.9);
 
   --radius-sm: 8px;
   --radius-md: 12px;

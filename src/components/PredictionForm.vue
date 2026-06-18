@@ -369,7 +369,7 @@ function handleReset() {
   </Drawer>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .form-card {
   -webkit-backdrop-filter: blur(var(--blur));
   backdrop-filter: blur(var(--blur));
@@ -377,7 +377,7 @@ function handleReset() {
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-card);
   padding: 20px;
-  position: relative; /* Anchors the help button when it pins top-right on narrow screens. */
+  position: relative; // Anchors the help button when it pins top-right on narrow screens.
 }
 
 .header-right {
@@ -402,12 +402,14 @@ function handleReset() {
     color 0.2s ease,
     transform 0.2s ease;
   width: 28px;
-}
 
-.help-button:hover {
-  background: var(--color-primary-soft);
-  color: var(--color-primary-light);
-  transform: scale(1.1);
+  @media (hover: hover) {
+    &:hover {
+      background: var(--color-primary-soft);
+      color: var(--color-primary-light);
+      transform: scale(1.1);
+    }
+  }
 }
 
 .form-header {
@@ -417,12 +419,16 @@ function handleReset() {
   gap: 8px;
   justify-content: space-between;
   margin-bottom: 16px;
-}
 
-.form-header h2 {
-  color: var(--color-text);
-  font-size: 1.05rem;
-  font-weight: 600;
+  h2 {
+    color: var(--color-text);
+    font-size: 1.05rem;
+    font-weight: 600;
+  }
+
+  @media (width <= 480px) {
+    padding-right: 34px; // Reserve room for the pinned help button so the badge clears it.
+  }
 }
 
 .mode-badge {
@@ -464,28 +470,30 @@ function handleReset() {
     color 0.2s ease,
     transform 0.2s ease;
   width: 100%;
-}
 
-.section-divider:hover {
-  color: var(--color-text-secondary);
-}
+  &::before {
+    background: var(--color-border-subtle);
+    content: '';
+    flex: 1;
+    height: 1px;
+    order: -1;
+  }
 
-.section-divider:hover .chevron {
-  scale: 1.2;
+  @media (hover: hover) {
+    &:hover {
+      color: var(--color-text-secondary);
+
+      .chevron {
+        scale: 1.2;
+      }
+    }
+  }
 }
 
 .section-controls {
   align-items: center;
   display: flex;
   gap: 8px;
-}
-
-.section-divider::before {
-  background: var(--color-border-subtle);
-  content: '';
-  flex: 1;
-  height: 1px;
-  order: -1;
 }
 
 .chevron {
@@ -495,10 +503,10 @@ function handleReset() {
   transition:
     transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     scale 0.3s ease;
-}
 
-.chevron.expanded {
-  transform: rotate(180deg);
+  &.expanded {
+    transform: rotate(180deg);
+  }
 }
 
 .section-badge {
@@ -507,16 +515,16 @@ function handleReset() {
   font-weight: 600;
   padding: 2px 8px;
   white-space: nowrap;
-}
 
-.section-badge.body {
-  background: var(--color-success-soft);
-  color: var(--color-success-light);
-}
+  &.body {
+    background: var(--color-success-soft);
+    color: var(--color-success-light);
+  }
 
-.section-badge.vci {
-  background: var(--color-primary-soft);
-  color: var(--color-primary-light);
+  &.vci {
+    background: var(--color-primary-soft);
+    color: var(--color-primary-light);
+  }
 }
 
 .section-hint {
@@ -525,12 +533,20 @@ function handleReset() {
   font-weight: 400;
   letter-spacing: normal;
   text-transform: none;
+
+  @media (width <= 560px) {
+    display: none;
+  }
 }
 
 .field-row {
   display: grid;
   gap: 8px;
   grid-template-columns: 1fr 1fr;
+
+  @media (width <= 560px) {
+    grid-template-columns: 1fr;
+  }
 }
 
 .fields {
@@ -598,20 +614,22 @@ function handleReset() {
   justify-content: center;
   padding: 12px 16px;
   transition: all 0.3s var(--ease);
-}
 
-.btn-primary:hover:not(:disabled) {
-  box-shadow: 0 4px 20px rgb(1, 175, 171, 0.35);
-  transform: translateY(-1px);
-}
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
 
-.btn-primary:active:not(:disabled) {
-  transform: translateY(0);
-}
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+  }
 
-.btn-primary:disabled {
-  cursor: not-allowed;
-  opacity: 0.4;
+  @media (hover: hover) {
+    &:hover:not(:disabled) {
+      box-shadow: 0 4px 20px rgb(1, 175, 171, 0.35);
+      transform: translateY(-1px);
+    }
+  }
 }
 
 .btn-secondary {
@@ -624,11 +642,13 @@ function handleReset() {
   font-weight: 500;
   padding: 12px 16px;
   transition: all 0.2s var(--ease);
-}
 
-.btn-secondary:hover {
-  background: var(--color-surface-hover);
-  color: var(--color-text);
+  @media (hover: hover) {
+    &:hover {
+      background: var(--color-surface-hover);
+      color: var(--color-text);
+    }
+  }
 }
 
 .collapse-enter-active,
@@ -646,21 +666,7 @@ function handleReset() {
   opacity: 0;
 }
 
-@media (width <= 560px) {
-  .field-row {
-    grid-template-columns: 1fr;
-  }
-
-  .section-hint {
-    display: none;
-  }
-}
-
 @media (width <= 480px) {
-  .form-header {
-    padding-right: 34px; /* Reserve room for the pinned help button so the badge clears it. */
-  }
-
   .help {
     position: absolute;
     right: 20px;

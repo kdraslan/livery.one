@@ -134,7 +134,7 @@ onBeforeUnmount(() => {
   </Teleport>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .drawer-root {
   inset: 0;
   pointer-events: none;
@@ -166,11 +166,11 @@ onBeforeUnmount(() => {
   position: fixed;
   right: 20px;
   z-index: 1001;
-}
 
-.fit {
-  height: auto;
-  max-height: 70vh;
+  &.fit {
+    height: auto;
+    max-height: 70vh;
+  }
 }
 
 .handle {

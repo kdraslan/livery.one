@@ -38,7 +38,7 @@ function handleInput(e: Event) {
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .input-group {
   align-items: center;
   background: var(--color-surface-subtle);
@@ -47,32 +47,36 @@ function handleInput(e: Event) {
   overflow: hidden;
   position: relative;
   transition: all 0.2s ease;
-}
 
-.input-group.filled {
-  background: var(--color-primary-soft);
-}
+  &.filled {
+    background: var(--color-primary-soft);
 
-.input-group::before {
-  background: var(--color-primary);
-  border-radius: 2px;
-  bottom: 6px;
-  content: '';
-  left: 0;
-  position: absolute;
-  top: 6px;
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.2s ease;
-  width: 3px;
-}
+    .input {
+      color: var(--color-primary-light);
+    }
+  }
 
-.input-group:focus-within::before {
-  transform: scaleX(1);
+  &::before {
+    background: var(--color-primary);
+    border-radius: 2px;
+    bottom: 6px;
+    content: '';
+    left: 0;
+    position: absolute;
+    top: 6px;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.2s ease;
+    width: 3px;
+  }
+
+  &:focus-within::before {
+    transform: scaleX(1);
+  }
 }
 
 .input {
-  -moz-appearance: textfield; /* Hide native number spinners. */
+  -moz-appearance: textfield; // Hide native number spinners.
   -webkit-appearance: textfield;
   appearance: textfield;
   background: transparent;
@@ -84,21 +88,17 @@ function handleInput(e: Event) {
   padding-left: 15px;
   padding-right: 48px;
   transition: all 0.2s;
-}
 
-.input-group.filled .input {
-  color: var(--color-primary-light);
-}
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    appearance: none;
+    margin: 0;
+  }
 
-.input::-webkit-outer-spin-button,
-.input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  appearance: none;
-  margin: 0;
-}
-
-.input:focus {
-  outline: none;
+  &:focus {
+    outline: none;
+  }
 }
 
 .unit {
