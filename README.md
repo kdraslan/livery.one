@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset=".github/logo-dark.svg">
-    <img alt="Livery.one" src=".github/logo-light.svg" height="44">
+    <img alt="Livery.one" src=".github/logo-light.svg" height="60">
   </picture>
 </p>
 
