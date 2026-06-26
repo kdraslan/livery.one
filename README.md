@@ -5,6 +5,8 @@
   </picture>
 </p>
 
+---
+
 <p align="center">
   Predict liver weight from preoperative clinical measurements, right in the browser.
 </p>
@@ -12,8 +14,6 @@
 <p align="center">
   <a href="https://livery.one">livery.one</a>
 </p>
-
----
 
 ## Overview
 
